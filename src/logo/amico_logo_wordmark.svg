@@ -1,0 +1,18 @@
+<!-- amico · wordmark only -->
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="120" viewBox="0 0 420 120"
+     style="--c-text:#374151; --c-accent:#D4A373">
+    <title>amico wordmark</title>
+    <defs>
+        <style>
+            .text{fill:var(--c-text); font-family: Inter, "Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-weight:700; letter-spacing:.4px}
+            .accent{fill:var(--c-accent)}
+        </style>
+    </defs>
+
+    <!-- 기본 워드마크 -->
+    <text x="24" y="76" class="text" font-size="64">amico</text>
+
+    <!-- i 위에 작고 은은한 '씨앗 점'(선택) -->
+    <!-- 위치는 폰트에 따라 약간 달라질 수 있어 필요시 x 조정 -->
+    <path d="M220,42 C220,36 230,36 230,42 C230,48 220,48 220,42 Z" class="accent"/>
+</svg>

@@ -1,0 +1,1060 @@
+Compiled with problems:
+×
+ERROR in ./src/screens/MainScreen.tsx
+Module build failed (from ./node_modules/babel-loader/lib/index.js):
+SyntaxError: C:\Users\suhoo\Desktop\coding\amico\my-app\src\screens\MainScreen.tsx: Missing semicolon. (244:17)
+
+  242 |     opacity: 0.25;
+  243 | `;
+> 244 |     border-radius: 0;
+      |                  ^
+  245 | const Section = styled.section`
+  246 |     border-radius: 0;
+  247 |     max-width: 48rem;
+    at constructor (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:367:19)
+    at TypeScriptParserMixin.raise (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:6630:19)
+    at TypeScriptParserMixin.semicolon (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:6926:10)
+    at TypeScriptParserMixin.parseExpressionStatement (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:13290:10)
+    at TypeScriptParserMixin.parseExpressionStatement (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:9616:26)
+    at TypeScriptParserMixin.parseStatementContent (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:12904:19)
+    at TypeScriptParserMixin.parseStatementContent (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:9532:18)
+    at TypeScriptParserMixin.parseStatementLike (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:12772:17)
+    at TypeScriptParserMixin.parseModuleItem (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:12749:17)
+    at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:13321:36)
+    at TypeScriptParserMixin.parseBlockBody (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:13314:10)
+    at TypeScriptParserMixin.parseProgram (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:12630:10)
+    at TypeScriptParserMixin.parseTopLevel (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:12620:25)
+    at TypeScriptParserMixin.parse (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:14497:10)
+    at TypeScriptParserMixin.parse (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:10149:18)
+    at parse (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\parser\lib\index.js:14531:38)
+    at parser (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\core\lib\parser\index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\core\lib\transformation\normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\core\lib\transformation\index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\@babel\core\lib\transform.js:22:33)
+    at transform.next (<anonymous>)
+    at step (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\gensync\index.js:261:32)
+    at C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\gensync\index.js:273:13
+    at async.call.result.err.err (C:\Users\suhoo\Desktop\coding\amico\my-app\node_modules\gensync\index.js:223:11)
+ERROR
+[eslint] 
+src\screens\MainScreen.tsx
+  Line 244:17:  Parsing error: ';' expected
+
+ERROR in src/Router.tsx:3:8
+TS1192: Module '"C:/Users/suhoo/Desktop/coding/amico/my-app/src/screens/MainScreen"' has no default export.
+    1 | import {createBrowserRouter} from "react-router-dom";
+    2 | import Root from "./Root";
+  > 3 | import MainScreen from "./screens/MainScreen";
+      |        ^^^^^^^^^^
+    4 | import Login from "./screens/Login";
+    5 | import NotFound from "./screens/NotFound";
+    6 | import QuizScreen from "./screens/Quiz";
+ERROR in src/screens/MainScreen.tsx
+TS1160: Unterminated template literal.
+ERROR in src/screens/MainScreen.tsx:244:5
+TS2304: Cannot find name 'border'.
+    242 |     opacity: 0.25;
+    243 | `;
+  > 244 |     border-radius: 0;
+        |     ^^^^^^
+    245 | const Section = styled.section`
+    246 |     border-radius: 0;
+    247 |     max-width: 48rem;
+ERROR in src/screens/MainScreen.tsx:244:12
+TS2304: Cannot find name 'radius'.
+    242 |     opacity: 0.25;
+    243 | `;
+  > 244 |     border-radius: 0;
+        |            ^^^^^^
+    245 | const Section = styled.section`
+    246 |     border-radius: 0;
+    247 |     max-width: 48rem;
+ERROR in src/screens/MainScreen.tsx:244:18
+TS1005: ';' expected.
+    242 |     opacity: 0.25;
+    243 | `;
+  > 244 |     border-radius: 0;
+        |                  ^
+    245 | const Section = styled.section`
+    246 |     border-radius: 0;
+    247 |     max-width: 48rem;
+ERROR in src/screens/MainScreen.tsx:263:14
+TS2304: Cannot find name 'flex'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |              ^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:20
+TS2304: Cannot find name 'justify'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                    ^^^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:28
+TS2304: Cannot find name 'content'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                            ^^^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:35
+TS1005: ';' expected.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                   ^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:37
+TS2304: Cannot find name 'space'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                     ^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:43
+TS2304: Cannot find name 'between'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                           ^^^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:52
+TS2304: Cannot find name 'align'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                    ^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:58
+TS2304: Cannot find name 'items'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                          ^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:63
+TS1005: ';' expected.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                               ^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:65
+TS2304: Cannot find name 'center'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                 ^^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:82
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                  ^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:82
+TS2304: Cannot find name 'px'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                  ^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:85
+TS1434: Unexpected keyword or identifier.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                     ^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:85
+TS2304: Cannot find name 'solid'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                     ^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:91
+TS1434: Unexpected keyword or identifier.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                           ^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:91
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                           ^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:93
+TS7006: Parameter 'props' implicitly has an 'any' type.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                             ^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:126
+TS2304: Cannot find name 'border'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                              ^^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:133
+TS2304: Cannot find name 'radius'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                     ^^^^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:139
+TS1005: ';' expected.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                           ^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:155
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                                           ^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:155
+TS1434: Unexpected keyword or identifier.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                                           ^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:155
+TS2304: Cannot find name 'rem'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                                           ^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:162
+TS1005: ';' expected.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                                                  ^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:162
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                                                  ^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:263:162
+TS2304: Cannot find name 'rem'.
+    261 | `;
+    262 |
+  > 263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+        |                                                                                                                                                                  ^^^
+    264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+    265 | `;
+    266 | 
+ERROR in src/screens/MainScreen.tsx:264:5
+TS2304: Cannot find name 'list'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |     ^^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:10
+TS2304: Cannot find name 'style'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |          ^^^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:15
+TS1005: ';' expected.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |               ^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:17
+TS2304: Cannot find name 'none'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                 ^^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:55
+TS2304: Cannot find name 'flex'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                                                       ^^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:61
+TS2304: Cannot find name 'flex'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                                                             ^^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:66
+TS2304: Cannot find name 'direction'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                                                                  ^^^^^^^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:75
+TS1005: ';' expected.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                                                                           ^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:77
+TS2304: Cannot find name 'column'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                                                                             ^^^^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:92
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                                                                                            ^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:264:92
+TS2304: Cannot find name 'rem'.
+    262 |
+    263 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: 0; padding: .5rem .75rem;
+  > 264 |     list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .5rem;
+        |                                                                                            ^^^
+    265 | `;
+    266 | 
+    267 | const Row = styled.li`
+ERROR in src/screens/MainScreen.tsx:268:14
+TS2304: Cannot find name 'flex'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |              ^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:20
+TS2304: Cannot find name 'justify'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                    ^^^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:28
+TS2304: Cannot find name 'content'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                            ^^^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:35
+TS1005: ';' expected.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                   ^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:37
+TS2304: Cannot find name 'space'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                     ^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:43
+TS2304: Cannot find name 'between'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                           ^^^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:52
+TS2304: Cannot find name 'align'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                    ^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:58
+TS2304: Cannot find name 'items'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                          ^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:63
+TS1005: ';' expected.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                               ^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:65
+TS2304: Cannot find name 'center'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                 ^^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:82
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                  ^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:82
+TS2304: Cannot find name 'px'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                  ^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:85
+TS1434: Unexpected keyword or identifier.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                     ^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:85
+TS2304: Cannot find name 'solid'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                     ^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:91
+TS1434: Unexpected keyword or identifier.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                           ^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:91
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                           ^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:93
+TS7006: Parameter 'props' implicitly has an 'any' type.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                             ^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:126
+TS2304: Cannot find name 'border'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                              ^^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:133
+TS2304: Cannot find name 'radius'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                     ^^^^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:139
+TS1005: ';' expected.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                           ^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:145
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                 ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:145
+TS2304: Cannot find name 'rem'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                 ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:161
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                                 ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:161
+TS1434: Unexpected keyword or identifier.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                                 ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:161
+TS2304: Cannot find name 'rem'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                                 ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:168
+TS1005: ';' expected.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                                        ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:168
+TS1351: An identifier or keyword cannot immediately follow a numeric literal.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                                        ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:268:168
+TS2304: Cannot find name 'rem'.
+    266 | 
+    267 | const Row = styled.li`
+  > 268 |     display: flex; justify-content: space-between; align-items: center; border: 1px solid ${props => props.theme.baseHover}; border-radius: .375rem; padding: .5rem .75rem;
+        |                                                                                                                                                                        ^^^
+    269 | `;
+    270 | 
+    271 | 
+ERROR in src/screens/MainScreen.tsx:298:55
+TS1005: ';' expected.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                       ^^^^^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:60
+TS1005: '{' expected.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                            ^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:61
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                             ^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:62
+TS1005: ';' expected.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                              ^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:63
+TS2304: Cannot find name 'p'.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                               ^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:83
+TS1005: ';' expected.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                   ^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:83
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                   ^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:96
+TS2304: Cannot find name 'p'.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                                ^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:105
+TS2304: Cannot find name 'px'.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                                         ^^
+    299 |                                 ))}
+    300 |                             </ThermoTicks>
+    301 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:298:107
+TS1443: Module declaration names may only use ' or " quoted strings.
+    296 |                             <ThermoTicks>
+    297 |                                 {[0,20,40,60,80,100].map(p => (
+  > 298 |                                     <ThermoTick key={`class-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                                           ^^^^^^^
+  > 299 |                                 ))}
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 300 |                             </ThermoTicks>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 301 |                         </ThermoVisual>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 302 |                         <ThermoMeta>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 303 |                             <ThermoPercent>{classTempVal}%</ThermoPercent>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 304 |                             <ThermoHint>전체 평균</ThermoHint>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 305 |                         </ThermoMeta>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 306 |                     </Thermometer>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 307 |                 </TempCard>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 308 |                 <TempCard>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 309 |                     <TempTitle>나의 온도</TempTitle>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 310 |                     <Thermometer>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 311 |                         <ThermoVisual>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 312 |                             <ThermoTube>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 313 |                                 <ThermoFill percent={myTempVal} />
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 314 |                             </ThermoTube>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 315 |                             <ThermoBulb />
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 316 |                             <ThermoTicks>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 317 |                                 {[0,20,40,60,80,100].map(p => (
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:55
+TS2304: Cannot find name 'my'.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                       ^^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:58
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                          ^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:59
+TS1005: ';' expected.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                           ^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:60
+TS2304: Cannot find name 'p'.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                            ^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:80
+TS1005: ';' expected.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                ^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:80
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                ^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:93
+TS2304: Cannot find name 'p'.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                             ^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:102
+TS2304: Cannot find name 'px'.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                                      ^^
+    319 |                                 ))}
+    320 |                             </ThermoTicks>
+    321 |                         </ThermoVisual>
+ERROR in src/screens/MainScreen.tsx:318:104
+TS1443: Module declaration names may only use ' or " quoted strings.
+    316 |                             <ThermoTicks>
+    317 |                                 {[0,20,40,60,80,100].map(p => (
+  > 318 |                                     <ThermoTick key={`my-${p}`} style={{ top: `${96 - (96 * p) / 100}px` }} />
+        |                                                                                                        ^^^^^^^
+  > 319 |                                 ))}
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 320 |                             </ThermoTicks>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 321 |                         </ThermoVisual>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 322 |                         <ThermoMeta>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 323 |                             <ThermoPercent>{myTempVal}%</ThermoPercent>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 324 |                             <ThermoHint>{me ? `별명 ${me.nickname}` : '로그인 필요'}</ThermoHint>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    325 |                         </ThermoMeta>
+    326 |                     </Thermometer>
+    327 |                 </TempCard>
+ERROR in src/screens/MainScreen.tsx:324:48
+TS1434: Unexpected keyword or identifier.
+    322 |                         <ThermoMeta>
+    323 |                             <ThermoPercent>{myTempVal}%</ThermoPercent>
+  > 324 |                             <ThermoHint>{me ? `별명 ${me.nickname}` : '로그인 필요'}</ThermoHint>
+        |                                                ^^
+    325 |                         </ThermoMeta>
+    326 |                     </Thermometer>
+    327 |                 </TempCard>
+ERROR in src/screens/MainScreen.tsx:324:48
+TS2304: Cannot find name '별명'.
+    322 |                         <ThermoMeta>
+    323 |                             <ThermoPercent>{myTempVal}%</ThermoPercent>
+  > 324 |                             <ThermoHint>{me ? `별명 ${me.nickname}` : '로그인 필요'}</ThermoHint>
+        |                                                ^^
+    325 |                         </ThermoMeta>
+    326 |                     </Thermometer>
+    327 |                 </TempCard>
+ERROR in src/screens/MainScreen.tsx:324:51
+TS1434: Unexpected keyword or identifier.
+    322 |                         <ThermoMeta>
+    323 |                             <ThermoPercent>{myTempVal}%</ThermoPercent>
+  > 324 |                             <ThermoHint>{me ? `별명 ${me.nickname}` : '로그인 필요'}</ThermoHint>
+        |                                                   ^
+    325 |                         </ThermoMeta>
+    326 |                     </Thermometer>
+    327 |                 </TempCard>
+ERROR in src/screens/MainScreen.tsx:324:51
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    322 |                         <ThermoMeta>
+    323 |                             <ThermoPercent>{myTempVal}%</ThermoPercent>
+  > 324 |                             <ThermoHint>{me ? `별명 ${me.nickname}` : '로그인 필요'}</ThermoHint>
+        |                                                   ^
+    325 |                         </ThermoMeta>
+    326 |                     </Thermometer>
+    327 |                 </TempCard>
+ERROR in src/screens/MainScreen.tsx:324:53
+TS2304: Cannot find name 'me'.
+    322 |                         <ThermoMeta>
+    323 |                             <ThermoPercent>{myTempVal}%</ThermoPercent>
+  > 324 |                             <ThermoHint>{me ? `별명 ${me.nickname}` : '로그인 필요'}</ThermoHint>
+        |                                                     ^^
+    325 |                         </ThermoMeta>
+    326 |                     </Thermometer>
+    327 |                 </TempCard>
+ERROR in src/screens/MainScreen.tsx:324:65
+TS2349: This expression is not callable.
+  Type 'String' has no call signatures.
+    322 |                         <ThermoMeta>
+    323 |                             <ThermoPercent>{myTempVal}%</ThermoPercent>
+  > 324 |                             <ThermoHint>{me ? `별명 ${me.nickname}` : '로그인 필요'}</ThermoHint>
+        |                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 325 |                         </ThermoMeta>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 326 |                     </Thermometer>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 327 |                 </TempCard>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 328 |             </TempsRow>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 329 |             <CommunityAndQuiz>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 330 |                 <Community>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 331 |                     <div className="header">
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 332 |                         <h1>Community</h1>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 333 |                         <button>더보기</button>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 334 |                     </div>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 335 |                     <div className="content" />
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 336 |                 </Community>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 337 |                 <QuizPanel>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 338 |                     <h2>일일 퀴즈</h2>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 339 |                     <p>매일 새로운 밸런스 게임이 제공돼요!</p>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 340 |                     <button onClick={navigateToQuiz}>퀴즈 시작</button>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 341 |                 </QuizPanel>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 342 |             </CommunityAndQuiz>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 343 |
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 344 |             <Section>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 345 |                 <SectionTitle>MVP 히스토리</SectionTitle>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 346 |                 <List>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 347 |                     {mvpHistory.length === 0 && <Row><span>아직 MVP 기록이 없습니다.</span></Row>}
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 348 |                     {mvpHistory.map(rec => {
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 349 |                         const u = users.find(x => x.id === rec.userId);
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 350 |                         const name = u ? (u.revealed ? u.username : u.nickname) : 'unknown';
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 351 |                         return <Row key={rec.id}>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 352 |                             <span>{rec.date} · {rec.roomLabel}</span>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 353 |                             <strong>{name}</strong>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 354 |                         </Row>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 355 |                 </List>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 356 |             </Section>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 357 |
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 358 |             <Section>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 359 |                 <SectionTitle>온도 랭킹</SectionTitle>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 360 |                 <List>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 361 |                     {ranking.map((u, idx) => (
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 362 |                         <Row key={u.id}>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 363 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ` (${u.username})` : ''}</span>
+        | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    364 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ' (' + u.username + ')' : ''}</span>
+    365 |                             <strong>{u.temp}%</strong>
+    366 |                         </Row>
+ERROR in src/screens/MainScreen.tsx:363:73
+TS2581: Cannot find name '$'. Do you need to install type definitions for jQuery? Try `npm i --save-dev @types/jquery`.
+    361 |                     {ranking.map((u, idx) => (
+    362 |                         <Row key={u.id}>
+  > 363 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ` (${u.username})` : ''}</span>
+        |                                                                         ^
+    364 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ' (' + u.username + ')' : ''}</span>
+    365 |                             <strong>{u.temp}%</strong>
+    366 |                         </Row>
+ERROR in src/screens/MainScreen.tsx:363:74
+TS1005: ',' expected.
+    361 |                     {ranking.map((u, idx) => (
+    362 |                         <Row key={u.id}>
+  > 363 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ` (${u.username})` : ''}</span>
+        |                                                                          ^
+    364 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ' (' + u.username + ')' : ''}</span>
+    365 |                             <strong>{u.temp}%</strong>
+    366 |                         </Row>
+ERROR in src/screens/MainScreen.tsx:363:75
+TS18004: No value exists in scope for the shorthand property 'u'. Either declare one or provide an initializer.
+    361 |                     {ranking.map((u, idx) => (
+    362 |                         <Row key={u.id}>
+  > 363 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ` (${u.username})` : ''}</span>
+        |                                                                           ^
+    364 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ' (' + u.username + ')' : ''}</span>
+    365 |                             <strong>{u.temp}%</strong>
+    366 |                         </Row>
+ERROR in src/screens/MainScreen.tsx:363:76
+TS1005: ',' expected.
+    361 |                     {ranking.map((u, idx) => (
+    362 |                         <Row key={u.id}>
+  > 363 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ` (${u.username})` : ''}</span>
+        |                                                                            ^
+    364 |                             <span>{idx+1}. {u.nickname}{u.revealed ? ' (' + u.username + ')' : ''}</span>
+    365 |                             <strong>{u.temp}%</strong>
+    366 |                         </Row>

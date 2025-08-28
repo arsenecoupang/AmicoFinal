@@ -1,0 +1,21 @@
+<!-- amico · combination lockup (icon + wordmark) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="192" viewBox="0 0 720 192">
+    <title>amico logo</title>
+    <desc>말풍선(대화) + 잎(성장) + 두 점(친구)을 담은 심볼과 워드마크.</desc>
+    <g transform="translate(32,32)">
+        <!-- chat bubble (rounded square + tail), 무테-플랫 형태로 단순화 -->
+        <rect x="0" y="0" width="112" height="112" rx="36" fill="#A8C686"/>
+        <path d="M84 88 L84 112 L64 92 Z" fill="#A8C686"/>
+
+        <!-- leaf (자연, 성장) -->
+        <path d="M40,60 C40,50 72,50 72,60 C72,70 40,70 40,60 Z" fill="#F6F9F4"/>
+        <!-- friend dots (따뜻한 포인트) -->
+        <circle cx="37" cy="43" r="4.4" fill="#D4A373"/>
+        <circle cx="75" cy="43" r="4.4" fill="#D4A373"/>
+    </g>
+
+    <!-- WORDMARK -->
+    <g transform="translate(192,120)">
+        <text fill="#374151" font-family="Inter, 'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="700" font-size="68" letter-spacing=".4px">amico</text>
+    </g>
+</svg>
