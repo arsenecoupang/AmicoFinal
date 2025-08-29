@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import {styled, keyframes} from "styled-components";
+import { styled, keyframes } from "styled-components";
 import { useAuth } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from '../db';
 
 const fadeInUp = keyframes`
   from {
@@ -117,59 +118,115 @@ const HelperText = styled.p`
     opacity: 0.85;
 `;
 
+
 function Login (){
     const [isLogin, setIsLogin] = useState(true);
-    const [formData, setFormData] = useState({ username: "", password: "", email: "" });
-    const [errors, setErrors] = useState({ username: false, password: false, email: false });
+    const [formData, setFormData] = useState({ username: "", password: "", email: "", realname: "" });
+    const [errors, setErrors] = useState({ username: false, password: false, email: false, realname: false });
     const { login } = useAuth();
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
-        setErrors({ ...errors, [name]: false }); // 입력 시 에러 해제
+        setErrors({ ...errors, [name]: false });
+        setErrorMsg("");
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // 입력값 검사
-        const newErrors = {
-            username: formData.username.trim() === "",
-            password: formData.password.trim() === "",
-            email: !isLogin && formData.email.trim() === ""
-        };
+            const newErrors = {
+                // username is only required when signing up
+                username: !isLogin && formData.username.trim() === "",
+                password: formData.password.trim() === "",
+                // email is required for login and signup
+                email: formData.email.trim() === "",
+                realname: !isLogin && formData.realname.trim() === ""
+            };
         setErrors(newErrors);
-        // 에러가 있으면 제출 중단
-        if (newErrors.username || newErrors.password || newErrors.email) return;
-        // 실제 서버 연결 없이 바로 로그인 처리
-        login({ username: formData.username, email: formData.email });
-        navigate("/home");
+        if (newErrors.username || newErrors.password || newErrors.email || newErrors.realname) return;
+        setLoading(true);
+        setErrorMsg("");
+        try {
+            if (isLogin) {
+                // 로그인
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: formData.email,
+                    password: formData.password
+                });
+                if (error) throw error;
+                // 프로필 정보 가져오기
+                const { data: profileData } = await supabase
+                  .from('profiles')
+                  .select('username, realname')
+                  .eq('id', data.user.id)
+                  .single();
+                login({ username: profileData?.username || '', email: formData.email });
+                navigate("/home");
+            } else {
+                // 회원가입
+                const { data, error } = await supabase.auth.signUp({
+                    email: formData.email,
+                    password: formData.password
+                });
+                if (error) throw error;
+                // 프로필 정보 저장
+                await supabase.from('profiles').insert([
+                    {
+                        id: data.user?.id,
+                        email: formData.email,
+                        username: formData.username,
+                        realname: formData.realname,
+                        temperature: 0
+                    }
+                ]);
+                login({ username: formData.username, email: formData.email });
+                navigate("/home");
+            }
+        } catch (err: any) {
+            setErrorMsg(err.message || "오류가 발생했습니다.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return <Container>
-
         <LoginForm onSubmit={handleSubmit}>
             <h1>{isLogin ? "로그인" : "회원가입"}</h1>
             <div>
-                {!isLogin && (
-                    <>
-                        <HelperText>이메일</HelperText>
-                        <LoginInput
-                            type="email"
-                            name="email"
-                            placeholder="이메일을 입력하세요"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            error={errors.email}
-                        />
-                        {errors.email && <HelperText style={{color:'#e74c3c'}}>이메일을 입력하세요.</HelperText>}
-                    </>
-                )}
-                <HelperText>아이디</HelperText>
+                    {/* Email should be provided for both login and signup */}
+                    <HelperText>이메일</HelperText>
+                    <LoginInput
+                        type="email"
+                        name="email"
+                        placeholder="이메일을 입력하세요"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        error={errors.email}
+                    />
+                    {errors.email && <HelperText style={{color:'#e74c3c'}}>이메일을 입력하세요.</HelperText>}
+
+                    { !isLogin && (
+                        <>
+                            <HelperText>실제 이름</HelperText>
+                            <LoginInput
+                                type="text"
+                                name="realname"
+                                placeholder="실제 이름을 입력하세요"
+                                value={formData.realname}
+                                onChange={handleInputChange}
+                                error={errors.realname}
+                            />
+                            {errors.realname && <HelperText style={{color:'#e74c3c'}}>실제 이름을 입력하세요.</HelperText>}
+                        </>
+                    )}
+                <HelperText>별명</HelperText>
                 <LoginInput
                     type="text"
                     name="username"
-                    placeholder="아이디를 입력하세요"
+                    placeholder="별명을 입력하세요"
                     value={formData.username}
                     onChange={handleInputChange}
                     error={errors.username}
@@ -185,7 +242,8 @@ function Login (){
                     error={errors.password}
                 />
                 {errors.password && <HelperText style={{color:'#e74c3c'}}>비밀번호를 입력하세요.</HelperText>}
-                <LoginButton type="submit">{isLogin ? "로그인" : "회원가입"}</LoginButton>
+                <LoginButton type="submit" disabled={loading}>{isLogin ? "로그인" : "회원가입"}</LoginButton>
+                {errorMsg && <HelperText style={{color:'#e74c3c'}}>{errorMsg}</HelperText>}
             </div>
             <HelperText>
                 {isLogin ? "계정이 없으신가요?" : "이미 계정이 있으신가요?"}

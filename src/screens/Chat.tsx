@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {styled, keyframes} from "styled-components";
+import { styled, keyframes } from "styled-components";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { useStore } from "../Store";
+import { supabase } from '../db';
 
 const ChatScreenDiv = styled.div`
     min-height: calc(100vh - 6.25rem);
@@ -173,91 +173,122 @@ const Send = styled.button<{disabled?: boolean}>`
   &:hover { background: ${p => p.disabled ? '#cfd8cf' : p.theme.mainHover}; }
 `;
 
-type Msg = { id: string; sender: 'me' | 'other' | 'system'; text: string; ts: number };
 
+type Msg = { id: string; sender: string; text: string; ts: number };
 function ChatScreen() {
-    const { user } = useAuth();
-    const { ensureUser, recordParticipation, addMessage } = useStore();
-    const location = useLocation();
-    const [loading, setLoading] = useState(true);
-    const [msgs, setMsgs] = useState<Msg[]>([]);
-    const [text, setText] = useState("");
-    const endRef = useRef<HTMLDivElement | null>(null);
+  const { user } = useAuth();
+  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [text, setText] = useState("");
+  const endRef = useRef<HTMLDivElement | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
 
-    const choice = (location.state as any)?.choice;
-    const roomLabel = useMemo(() => choice?.text ? `선택: ${choice.text}` : '공개 방', [choice]);
-    const me = useMemo(() => user ? ensureUser(user.username) : null, [user, ensureUser]);
+  // roomId 가져오기
+  useEffect(() => {
+    const rId = (location.state as any)?.roomId;
+    if (rId) setRoomId(rId);
+    setLoading(false);
+  }, [location.state]);
 
-    useEffect(() => {
-        const t = setTimeout(() => setLoading(false), 1200);
-        return () => clearTimeout(t);
-    }, []);
+  // 메시지 실시간 구독
+  useEffect(() => {
+    if (!roomId) return;
+    const subscription = supabase
+      .channel('messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+        const msg = payload.new;
+        setMsgs(prev => [...prev, {
+          id: msg.id,
+          sender: msg.user_id,
+          text: msg.content,
+          ts: new Date(msg.created_at).getTime()
+        }]);
+      })
+      .subscribe();
+    // 기존 메시지 불러오기
+    (async () => {
+      const { data } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: true });
+      if (data) {
+        setMsgs(data.map((msg: any) => ({
+          id: msg.id,
+          sender: msg.user_id,
+          text: msg.content,
+          ts: new Date(msg.created_at).getTime()
+        })));
+      }
+    })();
+    return () => { supabase.removeChannel(subscription); };
+  }, [roomId]);
 
-    useEffect(() => {
-        if (!loading && me) {
-            recordParticipation(me.username, roomLabel);
-            const welcome: Msg = { id: crypto.randomUUID(), sender: 'system', text: `${me.nickname}님, 별명으로 대화를 시작하세요.`, ts: Date.now() };
-            setMsgs(prev => prev.length ? prev : [welcome]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+
+  // 메시지 전송 및 온도 증가
+  const send = async () => {
+    const trimmed = text.trim();
+    if (!trimmed || !user || !roomId) return;
+    setText("");
+    // 메시지 저장
+    const { data, error } = await supabase
+      .from('messages')
+      .insert([
+        {
+          room_id: roomId,
+          user_id: user.username,
+          content: trimmed
         }
-    }, [loading, me, recordParticipation, roomLabel]);
+      ]);
+    // 온도 5도 증가
+    try {
+      await supabase.rpc('increment_temperature', { username: user.username, inc: 5 });
+    } catch (e) {
+      console.error('increment temp rpc failed', e);
+    }
+  };
 
-    useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
+  const onSubmit = (e: React.FormEvent) => { e.preventDefault(); send(); };
+  const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  };
 
-    const send = () => {
-        const trimmed = text.trim();
-        if (!trimmed || !me) return;
-        const mine: Msg = { id: crypto.randomUUID(), sender: 'me', text: trimmed, ts: Date.now() };
-        setMsgs(prev => [...prev, mine]);
-        setText("");
-        addMessage(me.username);
-        setTimeout(() => {
-            setMsgs(prev => [...prev, { id: crypto.randomUUID(), sender: 'other', text: '좋은 의견이에요!', ts: Date.now() }]);
-        }, 700);
-    };
-
-    const onSubmit = (e: React.FormEvent) => { e.preventDefault(); send(); };
-    const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-    };
-
-    return <ChatScreenDiv>
-        {loading && (
-            <Overlay role="status" aria-live="polite">
-                <OverlayCard>
-                    <Dot />
-                    <Dot />
-                    <Dot />
-                    <Message>나와 같은 대답을 한 사람들과 대회해보세요</Message>
-                </OverlayCard>
-            </Overlay>
-        )}
-        {!loading && (
-            <Shell>
-                <Header>
-                    <Title>채팅</Title>
-                    <RoomTag>{roomLabel}{me ? ` · 별명 ${me.nickname}` : ''}</RoomTag>
-                </Header>
-                <Board>
-                    <Messages>
-                        {msgs.map(m => (
-                            m.sender === 'system' ? (
-                                <System key={m.id}>{m.text}</System>
-                            ) : (
-                                <BubbleRow key={m.id} me={m.sender==='me'}>
-                                    <Bubble me={m.sender==='me'}>{m.text}</Bubble>
-                                </BubbleRow>
-                            )
-                        ))}
-                        <div ref={endRef} />
-                    </Messages>
-                    <InputBar onSubmit={onSubmit}>
-                        <TextInput value={text} onChange={e => setText(e.target.value)} onKeyDown={onKeyDown} placeholder="메시지를 입력하세요 (Enter 전송, Shift+Enter 줄바꿈)" />
-                        <Send type="submit" disabled={!text.trim()}>전송</Send>
-                    </InputBar>
-                </Board>
-            </Shell>
-        )}
-    </ChatScreenDiv>;
+  return <ChatScreenDiv>
+    {loading && (
+      <Overlay role="status" aria-live="polite">
+        <OverlayCard>
+          <Dot />
+          <Dot />
+          <Dot />
+          <Message>나와 같은 대답을 한 사람들과 대회해보세요</Message>
+        </OverlayCard>
+      </Overlay>
+    )}
+    {!loading && (
+      <Shell>
+        <Header>
+          <Title>채팅</Title>
+          <RoomTag>{roomId ? `방번호: ${roomId}` : ''}</RoomTag>
+        </Header>
+        <Board>
+          <Messages>
+            {msgs.map(m => (
+              <BubbleRow key={m.id} me={m.sender === user?.username}>
+                <Bubble me={m.sender === user?.username}>{m.text}</Bubble>
+              </BubbleRow>
+            ))}
+            <div ref={endRef} />
+          </Messages>
+          <InputBar onSubmit={onSubmit}>
+            <TextInput value={text} onChange={e => setText(e.target.value)} onKeyDown={onKeyDown} placeholder="메시지를 입력하세요 (Enter 전송, Shift+Enter 줄바꿈)" />
+            <Send type="submit" disabled={!text.trim()}>전송</Send>
+          </InputBar>
+        </Board>
+      </Shell>
+    )}
+  </ChatScreenDiv>;
 }
 
 export default ChatScreen;

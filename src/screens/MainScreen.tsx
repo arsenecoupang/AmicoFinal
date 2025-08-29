@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { styled } from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useStore } from "../Store";
 import { useAuth } from "../AuthContext";
+import { supabase } from '../db';
 
 const MainScreenDiv = styled.div`
   width: 100%;
@@ -322,15 +323,60 @@ const InfoText = styled.p`
 `;
 
 function MainScreen() {
-  const { users, mvpHistory, classTemp, ranking } = useStore();
+  const { users, mvpHistory, ranking } = useStore();
   const { user } = useAuth();
 
   const me = user ? users.find((u) => u.username === user.username) : null;
 
-  const classTempVal = classTemp;
-  const myTempVal = me?.temp ?? 0;
+  const [classTempVal, setClassTempVal] = useState<number>(0);
+  const [myTempVal, setMyTempVal] = useState<number>(0);
+
   const navigate = useNavigate();
   const navigateToQuiz = () => navigate("/quiz");
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) navigate('/login');
+  }, [user, navigate]);
+
+  // fetch temps and subscribe to changes
+  useEffect(() => {
+    let channel: any;
+    async function fetchTemps() {
+      try {
+        const { data } = await supabase.from('profiles').select('temperature, username');
+        if (data && data.length) {
+          const temps = data.map((p: any) => Number(p.temperature || 0));
+          const avg = temps.reduce((a: number, b: number) => a + b, 0) / temps.length;
+          setClassTempVal(Math.max(0, Math.min(100, Math.round(avg))));
+        } else {
+          setClassTempVal(0);
+        }
+        if (user) {
+          const { data: meData } = await supabase.from('profiles').select('temperature').eq('username', user.username).maybeSingle();
+          const t = meData?.temperature ?? 0;
+          setMyTempVal(Math.max(0, Math.min(100, Math.round(t))));
+        }
+      } catch (e) {
+        console.error('fetch temps error', e);
+      }
+    }
+    fetchTemps();
+
+    // realtime subscription to profiles changes
+    try {
+      channel = supabase
+        .channel('public:profiles')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+          fetchTemps();
+        })
+        .subscribe();
+    } catch (e) {
+      // ignore
+    }
+
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [user]);
 
   return (
     <MainScreenDiv>

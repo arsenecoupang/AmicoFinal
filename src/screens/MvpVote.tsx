@@ -1,128 +1,96 @@
-import React, { useMemo } from 'react';
-import { styled } from 'styled-components';
-import { useStore } from '../Store';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '../db';
+import styled from 'styled-components';
 import { useAuth } from '../AuthContext';
 
-const Wrap = styled.div`
-  min-height: calc(100vh - 6.25rem);
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem 1rem;
-  background: ${p => p.theme.base};
-  gap: 1rem;
-`;
+const Container = styled.div`padding:2rem; max-width:640px; margin:0 auto;`;
+const Card = styled.div`background:#fff;padding:1rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);`;
+const Btn = styled.button`background:#A8C686;color:#fff;padding:.6rem 1rem;border:none;border-radius:6px;cursor:pointer;font-weight:700;`;
 
-const Panel = styled.section`
-  width: 100%;
-  max-width: 48rem;
-  background: #fff;
-  border: 1px solid ${p => p.theme.baseHover};
-  border-radius: .5rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,.06);
-  padding: 1rem;
-`;
-
-const Title = styled.h1`
-  margin: 0 0 .5rem 0;
-  font-size: 1.25rem;
-  font-weight: 900;
-  color: ${p => p.theme.text};
-`;
-
-const Row = styled.div`
-  display: flex;
-  gap: .5rem;
-  flex-wrap: wrap;
-  align-items: center;
-`;
-
-const Button = styled.button`
-  background: ${p => p.theme.main};
-  color: #fff;
-  border: none;
-  border-radius: .25rem;
-  padding: .5rem .75rem;
-  font-weight: 800;
-  cursor: pointer;
-  &:hover { background: ${p => p.theme.mainHover}; }
-  &:disabled { background: #cfd8cf; cursor: not-allowed; }
-`;
-
-const List = styled.ul`
-  list-style: none;
-  padding: 0; margin: .75rem 0 0 0;
-  display: flex; flex-direction: column; gap: .5rem;
-`;
-
-const Item = styled.li`
-  display: flex; align-items: center; justify-content: space-between;
-  border: 1px solid ${p => p.theme.baseHover};
-  border-radius: .375rem;
-  padding: .5rem .75rem;
-`;
-
-export default function MvpVoteScreen() {
-  const { users, getCandidates, voteMvp, hasVoted, getMvpTally, finalizeMvp } = useStore();
+function MvpVote() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const roomId = (location.state as any)?.roomId as string | undefined;
+  const [members, setMembers] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(false);
 
-  const today = new Date();
-  const y = new Date(today.getTime() - 24*60*60*1000);
-  const dateStr = y.toISOString().slice(0,10);
+  useEffect(() => {
+    if (!roomId) return;
+    (async () => {
+      const { data: room } = await supabase.from('rooms').select('members').eq('id', roomId).single();
+      const m = room?.members ? (Array.isArray(room.members) ? room.members : JSON.parse(room.members)) : [];
+      setMembers(m);
+  // load current vote counts (aggregate in JS)
+  const { data: votes } = await supabase.from('votes').select('candidate_id').eq('room_id', roomId);
+  const c: Record<string, number> = {};
+  if (votes) votes.forEach((r:any) => { const id = r.candidate_id; c[id] = (c[id] || 0) + 1; });
+  setCounts(c);
+    })();
+  }, [roomId]);
 
-  const roomLabels = useMemo(() => {
-    return ['전체'];
-  }, []);
-  const room = roomLabels[0];
-
-  const candidates = useMemo(() => getCandidates(dateStr, room === '전체' ? undefined : room), [getCandidates, dateStr, room]);
-  const tally = getMvpTally(dateStr, room);
-
-  const voter = user?.username ?? 'guest';
-  const already = hasVoted(dateStr, room, voter);
-
-  const handleVote = (uid: number) => {
-    if (!voter) return;
-    voteMvp(dateStr, room, voter, uid);
+  const submitVote = async () => {
+    if (!user || !roomId || !selected) return;
+    setLoading(true);
+    try {
+      // remove any existing vote by this voter in this room
+      await supabase.from('votes').delete().eq('room_id', roomId).eq('voter_id', user.username);
+      await supabase.from('votes').insert([{ room_id: roomId, voter_id: user.username, candidate_id: selected }]);
+  // refresh counts
+  const { data: votes } = await supabase.from('votes').select('candidate_id').eq('room_id', roomId);
+  const c: Record<string, number> = {};
+  if (votes) votes.forEach((r:any) => { const id = r.candidate_id; c[id] = (c[id] || 0) + 1; });
+  setCounts(c);
+      alert('투표가 완료되었습니다.');
+    } catch (e:any) { alert(e.message || '오류'); }
+    setLoading(false);
   };
 
-  const handleFinalize = () => {
-    finalizeMvp(dateStr, room);
+  const finalize = async () => {
+    if (!roomId) return;
+    // compute winner
+  const { data: votes } = await supabase.from('votes').select('candidate_id').eq('room_id', roomId);
+  if (!votes || votes.length === 0) { alert('투표가 없습니다.'); return; }
+  const tally: Record<string, number> = {};
+  votes.forEach((v:any) => { const id = v.candidate_id; tally[id] = (tally[id] || 0) + 1; });
+  let winner = Object.keys(tally)[0];
+  let max = tally[winner];
+  Object.entries(tally).forEach(([k, v]) => { if (v > max) { max = v; winner = k; } });
+    // get realname
+    const { data: profile } = await supabase.from('profiles').select('realname,id').eq('username', winner).maybeSingle();
+    const realname = profile?.realname || null;
+    await supabase.from('mvp_history').insert([{ room_id: roomId, mvp_id: winner, realname, date: new Date().toISOString().slice(0,10) }]);
+    alert(`MVP: ${winner} (${realname ?? '실명 없음'})`);
+    navigate('/home');
   };
 
-  const winner = tally.length ? users.find(u => u.id === tally[0].userId) : null;
+  if (!roomId) return <Container><Card>유효한 방 정보가 없습니다.</Card></Container>;
 
-  return (
-    <Wrap>
-      <Panel>
-        <Title>전날 MVP 투표</Title>
-        <Row>
-          <span>날짜: {dateStr}</span>
-          <span>방: {room}</span>
-        </Row>
-        <List>
-          {candidates.length === 0 && <Item><span>어제 참여한 후보가 없습니다.</span></Item>}
-          {candidates.map(c => (
-            <Item key={c.id}>
-              <span>{c.nickname}</span>
-              <div style={{display:'flex', alignItems:'center', gap:'.5rem'}}>
-                <span style={{opacity:.7, fontSize:'.9rem'}}>득표: {tally.find(t => t.userId === c.id)?.count ?? 0}</span>
-                <Button onClick={() => handleVote(c.id)} disabled={already}>투표</Button>
-              </div>
-            </Item>
-          ))}
-        </List>
-        <Row style={{marginTop:'.75rem', justifyContent:'space-between'}}>
-          <span style={{opacity:.8}}>이미 투표했나요? {already ? '예' : '아니오'}</span>
-          <Button onClick={handleFinalize} disabled={!candidates.length}>MVP 발표</Button>
-        </Row>
-        {winner && (
-          <div style={{marginTop:'.75rem', padding:'.5rem .75rem', border:'1px solid #e5e7eb', borderRadius:'.375rem'}}>
-            <strong>오늘의 MVP</strong>: 실명 공개 {winner.username}
+  return <Container>
+    <h2>지난 채팅 멤버 중 MVP 투표</h2>
+    <Card>
+      <p>방: {roomId}</p>
+      <div>
+        {members.map(m => (
+          <div key={m} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.5rem 0',borderBottom:'1px solid #eee'}}>
+            <div>{m}</div>
+            <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+              <div style={{fontWeight:700}}>{counts[m] || 0}표</div>
+              <input type="radio" name="candidate" value={m} checked={selected===m} onChange={() => setSelected(m)} />
+            </div>
           </div>
-        )}
-      </Panel>
-    </Wrap>
-  );
+        ))}
+      </div>
+      <div style={{marginTop:'1rem',display:'flex',gap:'8px'}}>
+        <Btn onClick={submitVote} disabled={loading || !selected}>투표 제출</Btn>
+        <Btn onClick={finalize}>결과 확정 (관리자)</Btn>
+      </div>
+    </Card>
+  </Container>;
+
 }
+
+export default MvpVote;
