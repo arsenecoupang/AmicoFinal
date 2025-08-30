@@ -65,7 +65,9 @@ const LoginForm = styled.form`
     }
 `;
 
-const LoginInput = styled.input<{ error?: boolean }>`
+const LoginInput = styled.input.withConfig({
+    shouldForwardProp: (prop) => prop !== 'error'
+})<{ error?: boolean }>`
     border: none;
     border-bottom: 2px solid ${props => props.error ? '#e74c3c' : props.theme.sub};
     padding: 0.85rem 0.5rem;
@@ -150,42 +152,83 @@ function Login (){
         setLoading(true);
         setErrorMsg("");
         try {
+            console.log('Attempting login with:', { email: formData.email, password: '***' });
+            console.log('Supabase client initialized:', !!supabase);
+            
             if (isLogin) {
                 // 로그인
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: formData.email,
                     password: formData.password
                 });
+                
+                console.log('Login response:', { data: !!data, error: error?.message });
+                
                 if (error) throw error;
+                
                 // 프로필 정보 가져오기
                 const { data: profileData } = await supabase
                   .from('profiles')
                   .select('username, realname')
                   .eq('id', data.user.id)
                   .single();
+                  
+                console.log('Profile data:', profileData);
+                
                 login({ username: profileData?.username || '', email: formData.email });
                 navigate("/home");
             } else {
                 // 회원가입
+                console.log('Attempting signup with:', { email: formData.email });
+                
                 const { data, error } = await supabase.auth.signUp({
                     email: formData.email,
-                    password: formData.password
+                    password: formData.password,
+                    options: {
+                        emailRedirectTo: `${window.location.origin}/auth/callback`,
+                        data: {
+                            username: formData.username,
+                            realname: formData.realname
+                        }
+                    }
                 });
+                
+                console.log('Signup response:', { data: !!data, error: error?.message, user: data?.user });
+                
                 if (error) throw error;
-                // 프로필 정보 저장
-                await supabase.from('profiles').insert([
+                
+                if (!data.user) {
+                    throw new Error('회원가입에 실패했습니다.');
+                }
+                
+                // 이메일 인증이 필요한 경우
+                if (!data.user.email_confirmed_at && !data.session) {
+                    // 이메일을 localStorage에 저장하여 나중에 재발송할 수 있도록 함
+                    localStorage.setItem('pending_email', formData.email);
+                    
+                    setErrorMsg(" 이메일 인증 링크가 발송되었습니다\n\n 링크는 5분간 유효합니다.  \n\n 링크가 만료되었다면 다시 회원가입을 시도해주세요.");
+                    setIsLogin(true); // 로그인 폼으로 전환
+                    return;
+                }
+                
+                // 즉시 인증된 경우 (이메일 인증이 비활성화된 경우)
+                const profileInsert = await supabase.from('profiles').insert([
                     {
-                        id: data.user?.id,
+                        id: data.user.id,
                         email: formData.email,
                         username: formData.username,
                         realname: formData.realname,
                         temperature: 0
                     }
                 ]);
+                
+                console.log('Profile insert result:', profileInsert);
+                
                 login({ username: formData.username, email: formData.email });
                 navigate("/home");
             }
         } catch (err: any) {
+            console.error('Auth error:', err);
             setErrorMsg(err.message || "오류가 발생했습니다.");
         } finally {
             setLoading(false);
@@ -243,7 +286,7 @@ function Login (){
                 />
                 {errors.password && <HelperText style={{color:'#e74c3c'}}>비밀번호를 입력하세요.</HelperText>}
                 <LoginButton type="submit" disabled={loading}>{isLogin ? "로그인" : "회원가입"}</LoginButton>
-                {errorMsg && <HelperText style={{color:'#e74c3c'}}>{errorMsg}</HelperText>}
+                {errorMsg && <HelperText style={{color:'#e74c3c', whiteSpace: 'pre-line'}}>{errorMsg}</HelperText>}
             </div>
             <HelperText>
                 {isLogin ? "계정이 없으신가요?" : "이미 계정이 있으신가요?"}

@@ -2,8 +2,8 @@ require('dotenv').config();
 const fetch = require('node-fetch');
 const { createClient } = require('@supabase/supabase-js');
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_API_URL = process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
@@ -11,7 +11,7 @@ const ENABLE_OPENAI = (process.env.ENABLE_OPENAI || 'false').toLowerCase() === '
 const DRY_RUN = (process.env.DRY_RUN || 'false').toLowerCase() === 'true' || process.env.DRY_RUN === '1';
 
 if (!DRY_RUN && (!SUPABASE_URL || !SUPABASE_KEY)) {
-  console.error('Supabase URL or Key not provided. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY, or set DRY_RUN=true to run without Supabase.');
+  console.error('Supabase URL or Key not provided. Set REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY, or set DRY_RUN=true to run without Supabase.');
   process.exit(1);
 }
 
@@ -105,24 +105,10 @@ async function run() {
             body: JSON.stringify(bodyTemplate(attempt))
           });
           const json = await res.json();
-          if (res.status === 429 || json?.error) {
-            const code = json?.error?.code;
-            if (code === 'insufficient_quota') {
-              console.warn(`GPT API quota error (status ${res.status}, code ${code}) on attempt ${attempt}`);
-              parsed = null;
-              break; // permanent failure - fall back
-            }
-
-            // Transient error - retry with backoff. Use Retry-After header if present.
-            let retryAfterMs = null;
-            try {
-              const ra = res.headers && (typeof res.headers.get === 'function' ? res.headers.get('retry-after') : res.headers['retry-after']);
-              if (ra) retryAfterMs = Number(ra) * 1000;
-            } catch (e) { /* ignore */ }
-            if (!retryAfterMs) retryAfterMs = Math.min(30_000, Math.pow(2, attempt) * 1000);
-            console.warn(`GPT API temporary error (status ${res.status}, code ${code}) on attempt ${attempt}, retrying after ${retryAfterMs}ms`);
-            await new Promise((r) => setTimeout(r, retryAfterMs));
-            continue;
+          if (res.status === 429 || json?.error?.code === 'insufficient_quota') {
+            console.warn(`GPT API quota/rate error (status ${res.status}, code ${json?.error?.code}) on attempt ${attempt}`);
+            parsed = null;
+            break;
           }
           const assistant = json.choices?.[0]?.message?.content || json.choices?.[0]?.text || null;
           if (!assistant) {

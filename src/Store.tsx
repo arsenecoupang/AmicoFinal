@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { users as seed } from './db';
+
 
 export type StoreUser = {
   id: number;
@@ -47,7 +47,7 @@ function save(data: { users: StoreUser[]; mvpHistory: MvpRecord[]; participation
 const StoreContext = createContext<StoreState | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const initialUsers: StoreUser[] = seed.map((u, i) => ({ id: u.id ?? (i+1), username: u.username, nickname: u.nickname ?? `user${i+1}`, temp: 50 }));
+  const initialUsers: StoreUser[] = [];
   const persisted = load();
 
   const [users, setUsers] = useState<StoreUser[]>(persisted?.users ?? initialUsers);

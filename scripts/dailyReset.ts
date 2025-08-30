@@ -1,13 +1,13 @@
 import 'dotenv/config';
 import fetch from 'node-fetch';
 import { createClient } from '@supabase/supabase-js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-const ENABLE_GEMINI = (process.env.ENABLE_GEMINI || 'false').toLowerCase() === 'true' || process.env.ENABLE_GEMINI === '1';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_URL = process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+const ENABLE_OPENAI = (process.env.ENABLE_OPENAI || 'false').toLowerCase() === 'true' || process.env.ENABLE_OPENAI === '1';
 const DRY_RUN = (process.env.DRY_RUN || 'false').toLowerCase() === 'true' || process.env.DRY_RUN === '1';
 
 if (!DRY_RUN && (!SUPABASE_URL || !SUPABASE_KEY)) {
@@ -20,14 +20,43 @@ const supabase = !DRY_RUN && SUPABASE_URL && SUPABASE_KEY ? createClient(SUPABAS
 async function run() {
   console.log('Starting daily reset...');
 
+  // 0) 오늘 퀴즈가 이미 있는지 확인 (GPT 토큰 낭비 방지)
+  if (!DRY_RUN && supabase) {
+    try {
+      const today = new Date();
+      const todayStr = today.toISOString().slice(0, 10);
+      
+      console.log('Checking if today\'s quiz already exists...');
+      const { data: existingQuiz, error: checkError } = await supabase
+        .from('questions')
+        .select('id, question1, created_at')
+        .gte('created_at', todayStr + 'T00:00:00')
+        .lte('created_at', todayStr + 'T23:59:59')
+        .limit(1)
+        .single();
+      
+      if (existingQuiz) {
+        console.log('✅ Today\'s quiz already exists:', existingQuiz.question1);
+        console.log('🚫 Skipping quiz generation to save GPT tokens');
+        console.log('Daily reset completed (no new quiz needed)');
+        return;
+      } else {
+        console.log('📝 No quiz found for today, proceeding with generation...');
+      }
+    } catch (err: any) {
+      console.log('📝 No existing quiz found, proceeding with generation...');
+    }
+  }
+
   // 1) Archive yesterday's MVPs (if any) into mvp_history already done during voting flow — placeholder
   // If you want to compute MVPs here, implement aggregation logic based on votes table.
 
   // 2) Delete all rooms, messages, votes for previous day (skip in DRY_RUN)
   if (!DRY_RUN && supabase) {
     try {
-      console.log('Deleting messages...');
-      await supabase.from('messages').delete().neq('id', '');
+      console.log('Deleting previous day data...');
+      console.log('Deleting chats...');
+      await supabase.from('chats').delete().neq('id', '');
       console.log('Deleting votes...');
       await supabase.from('votes').delete().neq('id', '');
       console.log('Deleting rooms...');
@@ -80,50 +109,72 @@ async function run() {
     const systemMsg = `너는 중학생 수준의 한국어로 밸런스 게임 질문을 만드는 AI야. 자연스럽고 친근한 말투로 써라.`;
     const userPrompt = `중학생들이 좋아할 밸런스 게임 질문 하나를 JSON으로 만들어줘. 형식: {"question": "질문", "option1": "선택지1", "option2": "선택지2"}. 오직 JSON만 출력해.`;
 
+    const bodyTemplate = (attempt: number) => ({
+      model: OPENAI_MODEL,
+      messages: [
+        { role: 'system', content: systemMsg },
+        { role: 'user', content: userPrompt + ` (시도 ${attempt})` }
+      ],
+      max_tokens: 200,
+      temperature: 0.6,
+      n: 1
+    });
+
     let parsed: any = null;
 
-    if (GEMINI_API_KEY && ENABLE_GEMINI) {
-      console.log('Calling Gemini to generate question (middle-school style, natural Korean)...');
-      const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+    // GPT 토큰 사용량 추적
+    let gptTokensUsed = false;
 
+    if (OPENAI_API_KEY && ENABLE_OPENAI) {
+      console.log('🤖 Calling GPT to generate question (middle-school style, natural Korean)...');
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          const prompt = `${systemMsg}\n\n${userPrompt} (시도 ${attempt})`;
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          const text = response.text();
-
-          if (!text) {
-            console.warn(`Gemini empty response on attempt ${attempt}`);
+          gptTokensUsed = true;
+          console.log(`🔄 GPT attempt ${attempt}/3...`);
+          const res = await fetch(OPENAI_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify(bodyTemplate(attempt))
+          });
+          const json: any = await res.json();
+          if (res.status === 429 || json?.error?.code === 'insufficient_quota') {
+            console.warn(`GPT API quota/rate error (status ${res.status}, code ${json?.error?.code}) on attempt ${attempt}`);
+            parsed = null;
+            break; // fall back to local pool
+          }
+          const assistant = json.choices?.[0]?.message?.content || json.choices?.[0]?.text || null;
+          if (!assistant) {
+            console.warn(`GPT empty response on attempt ${attempt}`);
             continue;
           }
-
-          const match = text.match(/\{[\s\S]*\}/);
-          try { parsed = match ? JSON.parse(match[0]) : JSON.parse(text); } catch { parsed = null; }
-
+          const match = assistant.match(/\{[\s\S]*\}/);
+          try { parsed = match ? JSON.parse(match[0]) : JSON.parse(assistant); } catch { parsed = null; }
           if (isValidParsed(parsed)) {
             q1 = parsed.question.trim();
             opt1 = parsed.option1.trim();
             opt2 = parsed.option2.trim();
-            console.log('Gemini generated valid question');
+            console.log('GPT generated valid question');
             break;
           } else {
-            console.warn(`Gemini output failed validation on attempt ${attempt}`);
+            console.warn(`GPT output failed validation on attempt ${attempt}`);
             parsed = null;
           }
-        } catch (e: any) {
-          console.warn('Gemini call error, attempt', attempt, e.message || e);
+        } catch (e:any) {
+          console.warn('GPT call error, attempt', attempt, e.message || e);
         }
       }
-
       if (!parsed) {
-        console.warn('Gemini did not produce a valid question after retries — using fallback pool');
+        console.warn('🚫 GPT did not produce a valid question after retries — using fallback pool');
         useFallback();
+      } else {
+        console.log('✅ GPT successfully generated quiz question');
       }
     } else {
-      if (!ENABLE_GEMINI) console.log('Gemini disabled (ENABLE_GEMINI not set). Using local fallback questions.');
-      else if (!GEMINI_API_KEY) console.log('GEMINI_API_KEY not set. Using local fallback questions.');
+      if (!ENABLE_OPENAI) console.log('🔧 OpenAI disabled (ENABLE_OPENAI not set). Using local fallback questions.');
+      else if (!OPENAI_API_KEY) console.log('🔧 OPENAI_API_KEY not set. Using local fallback questions.');
       useFallback();
     }
 
@@ -136,17 +187,30 @@ async function run() {
       option2: opt2,
       created_at: now
     };
-    console.log('Inserting new question...');
+    
+    console.log('💾 Saving quiz to database...');
     if (!DRY_RUN && supabase) {
-      await supabase.from('questions').insert([question]);
+      const { data, error } = await supabase.from('questions').insert([question]);
+      if (error) {
+        console.error('❌ Error inserting question:', error.message || error);
+      } else {
+        console.log('✅ Quiz saved successfully:', { question: q1 });
+        
+        // GPT 사용량 리포트
+        if (gptTokensUsed) {
+          console.log('📊 GPT tokens were used for this generation');
+        } else {
+          console.log('💰 No GPT tokens used - used fallback pool');
+        }
+      }
     } else {
-      console.log('DRY_RUN: would insert question:', question);
+      console.log('🔧 DRY_RUN: would insert question:', question);
     }
   } catch (err: any) {
-    console.error('Error inserting new question', err.message || err);
+    console.error('❌ Error inserting new question', err.message || err);
   }
 
-  console.log('Daily reset finished.');
+  console.log('✅ Daily reset completed');
 }
 
 function cryptoRandomUUID() {
