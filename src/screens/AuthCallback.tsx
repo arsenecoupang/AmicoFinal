@@ -297,6 +297,7 @@ const AuthCallback: React.FC = () => {
   if (status === "loading") {
     return (
       <Container>
+        x``
         <Message>
           <h2>인증 처리 중...</h2>
           <p>잠시만 기다려주세요.</p>
