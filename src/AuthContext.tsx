@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { supabase } from './db';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import { supabase } from "./db";
 
 export type User = {
+  id: string; // Add id property
   username: string;
   email?: string;
 };
@@ -21,29 +28,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // 페이지 로드 시 세션 복원
-    console.log('AuthProvider mounted, starting session restore');
+    console.log("AuthProvider mounted, starting session restore");
     const getSession = async () => {
       try {
         const res = await supabase.auth.getSession();
         const session = res?.data?.session ?? null;
-        console.log('Session restored:', !!session);
+        console.log("Session restored:", !!session);
 
         if (session && session.user && session.user.id) {
           // 프로필 정보 가져오기
           const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('username, realname')
-            .eq('id', session.user.id)
+            .from("profiles")
+            .select("username, realname")
+            .eq("id", session.user.id)
             .single();
 
           if (profileError) {
-            console.warn('Failed to load profile during session restore:', profileError);
+            console.warn(
+              "Failed to load profile during session restore:",
+              profileError
+            );
           }
 
           if (profileData) {
-            setUser({ 
-              username: profileData.username, 
-              email: (session.user as any).email || '' 
+            setUser({
+              id: session.user.id, // Pass id to user object
+              username: profileData.username,
+              email: (session.user as any).email || "",
             });
           }
         } else {
@@ -51,19 +62,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null);
         }
       } catch (error) {
-        console.error('Session restore error:', error);
+        console.error("Session restore error:", error);
       } finally {
         setLoading(false);
       }
     };
 
     let didFinish = false;
-    getSession().then(() => { didFinish = true; }).catch(() => { didFinish = true; });
+    getSession()
+      .then(() => {
+        didFinish = true;
+      })
+      .catch(() => {
+        didFinish = true;
+      });
 
     // fallback: if session restore hangs, clear loading after 3s so UI can proceed
     const fallback = setTimeout(() => {
       if (!didFinish) {
-        console.warn('Session restore fallback triggered: clearing loading after timeout');
+        console.warn(
+          "Session restore fallback triggered: clearing loading after timeout"
+        );
         setLoading(false);
       }
     }, 3000);
@@ -72,26 +91,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const authListener = supabase.auth.onAuthStateChange((event, session) => {
       (async () => {
         try {
-          console.log('Auth state change:', event, !!session);
-          if (event === 'SIGNED_OUT' || !session) {
+          console.log("Auth state change:", event, !!session);
+          if (event === "SIGNED_OUT" || !session) {
             setUser(null);
-          } else if (event === 'SIGNED_IN' && session.user && session.user.id) {
+          } else if (event === "SIGNED_IN" && session.user && session.user.id) {
             const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
-              .select('username, realname')
-              .eq('id', session.user.id)
+              .from("profiles")
+              .select("username, realname")
+              .eq("id", session.user.id)
               .single();
 
             if (profileError) {
-              console.warn('Failed to load profile on auth state change:', profileError);
+              console.warn(
+                "Failed to load profile on auth state change:",
+                profileError
+              );
             }
 
             if (profileData) {
-              setUser({ username: profileData.username, email: (session.user as any).email || '' });
+              setUser({
+                id: session.user.id,
+                username: profileData.username,
+                email: (session.user as any).email || "",
+              });
             }
           }
         } catch (err) {
-          console.error('Error in auth state change handler:', err);
+          console.error("Error in auth state change handler:", err);
         } finally {
           setLoading(false);
         }
@@ -99,13 +125,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // authListener may return { data, error } or { subscription } depending on supabase version
-    const subscription = (authListener as any)?.data?.subscription ?? (authListener as any)?.subscription ?? null;
+    const subscription =
+      (authListener as any)?.data?.subscription ??
+      (authListener as any)?.subscription ??
+      null;
 
     return () => {
       clearTimeout(fallback);
       try {
-        if (subscription && typeof subscription.unsubscribe === 'function') subscription.unsubscribe();
-        else if (typeof (authListener as any)?.unsubscribe === 'function') (authListener as any).unsubscribe();
+        if (subscription && typeof subscription.unsubscribe === "function")
+          subscription.unsubscribe();
+        else if (typeof (authListener as any)?.unsubscribe === "function")
+          (authListener as any).unsubscribe();
       } catch (e) {
         // ignore unsubscribe errors
       }
@@ -115,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (user: User) => {
     setUser(user);
   };
-  
+
   const logout = async () => {
     try {
       setLoading(true);
@@ -138,4 +169,3 @@ export function useAuth() {
   if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
-

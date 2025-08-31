@@ -1,200 +1,308 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../db';
-import styled from 'styled-components';
-import { useAuth } from '../AuthContext';
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../db";
+import styled from "styled-components";
+import { useAuth } from "../AuthContext";
+import { v4 as uuidv4 } from "uuid";
 
-const Container = styled.div`padding:2rem; max-width:640px; margin:0 auto;`;
-const Card = styled.div`background:#fff;padding:1rem;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06);`;
-const Btn = styled.button`background:#A8C686;color:#fff;padding:.6rem 1rem;border:none;border-radius:6px;cursor:pointer;font-weight:700;`;
+const Container = styled.div`
+  padding: 2rem;
+  max-width: 640px;
+  margin: 0 auto;
+`;
+const Card = styled.div`
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+`;
+const Btn = styled.button`
+  background: #a8c686;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+`;
 
 interface Room {
   id: string;
   members: string[] | string;
   created_at?: string;
 }
+
+interface Profile {
+  id: string;
+  username: string;
+  realname?: string;
+}
+
 function MvpVote() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [allMembers, setAllMembers] = useState<string[]>([]);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(false);
-  const [memberProfiles, setMemberProfiles] = useState<{[username: string]: string}>({});
-  const [userRooms, setUserRooms] = useState<Room[]>([]);
+  const [candidates, setCandidates] = useState<Profile[]>([]);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
+    null
+  );
+  const [voteCounts, setVoteCounts] = useState<Record<string, number>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userRoomIds, setUserRoomIds] = useState<string[]>([]);
+  const [alreadyVoted, setAlreadyVoted] = useState(false);
 
-  // 인증 체크
-  useEffect(() => {
-    if (!authLoading && !user) navigate('/login');
-  }, [user, authLoading, navigate]);
-
-  // 사용자가 참여한 모든 방과 후보자, 기존 투표 집계 로드
-  useEffect(() => {
+  const fetchVoteData = useCallback(async () => {
     if (!user) return;
 
-    (async () => {
-      try {
-        // 테스트/운영 모두 안전하게: 모든 방에서 사용자가 포함된 방을 찾음
-        const { data: rooms } = await supabase
-          .from('rooms')
-          .select('id, members, created_at')
-          .order('created_at', { ascending: false });
+    setIsLoading(true);
+    setError(null);
 
-        if (!rooms) return;
+    try {
+      // 1. 사용자가 참여한 방 찾기
+      const { data: rooms, error: roomsError } = await supabase
+        .from("rooms")
+        .select("id, members");
 
-        const participated: Room[] = rooms.filter((r: any) => {
-          try {
-            const members = r.members ? (Array.isArray(r.members) ? r.members : JSON.parse(r.members)) : [];
-            return members.includes(user.username);
-          } catch (e) {
-            return false;
-          }
-        });
+      if (roomsError) throw roomsError;
 
-        setUserRooms(participated);
-
-        // 후보자 집합
-        const memberSet = new Set<string>();
-        participated.forEach(r => {
-          const members = r.members ? (Array.isArray(r.members) ? r.members : JSON.parse(r.members as string)) : [];
-          members.forEach((m: string) => memberSet.add(m));
-        });
-        const unique = Array.from(memberSet);
-        setAllMembers(unique);
-
-        // username -> profile id 매핑
-        if (unique.length > 0) {
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, username')
-            .in('username', unique);
-          const map: {[k:string]: string} = {};
-          if (profiles) profiles.forEach((p:any) => { if (p?.username && p?.id) map[p.username] = p.id; });
-          setMemberProfiles(map);
-
-          // 기존 투표 집계 (참여한 모든 방)
-          const roomIds = participated.map(r => r.id);
-          if (roomIds.length > 0) {
-            const { data: votes } = await supabase
-              .from('votes')
-              .select('candidate_id')
-              .in('room_id', roomIds);
-
-            const tally: Record<string, number> = {};
-            if (votes) {
-              votes.forEach((v: any) => {
-                // candidate_id(UUID) -> username
-                const username = Object.keys(map).find(k => map[k] === v.candidate_id);
-                if (username) tally[username] = (tally[username] || 0) + 1;
-              });
-            }
-            setCounts(tally);
-          }
+      const participatedRooms = rooms.filter((r: any) => {
+        try {
+          const members = Array.isArray(r.members)
+            ? r.members
+            : JSON.parse(r.members);
+          return members.includes(user.username);
+        } catch {
+          return false;
         }
-      } catch (e) {
-        console.error('MvpVote load error:', e);
+      });
+
+      if (participatedRooms.length === 0) {
+        setError("참여한 채팅방이 없습니다.");
+        setIsLoading(false);
+        return;
       }
-    })();
+
+      const roomIds = participatedRooms.map((r) => r.id);
+      setUserRoomIds(roomIds);
+
+      // 2. 모든 참여 방의 멤버(후보자) 목록 만들기
+      const memberUsernames = new Set<string>();
+      participatedRooms.forEach((r) => {
+        const members = Array.isArray(r.members)
+          ? r.members
+          : JSON.parse(r.members as string);
+        members.forEach((m: string) => memberUsernames.add(m));
+      });
+
+      // 3. 후보자 프로필 정보 가져오기
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, username, realname")
+        .in("username", Array.from(memberUsernames));
+
+      if (profilesError) throw profilesError;
+      setCandidates(profiles || []);
+
+      // 4. 현재 투표 현황 집계
+      const { data: votes, error: votesError } = await supabase
+        .from("votes")
+        .select("candidate_id")
+        .in("room_id", roomIds);
+
+      if (votesError) throw votesError;
+
+      const counts: Record<string, number> = {};
+      if (votes) {
+        votes.forEach((v) => {
+          counts[v.candidate_id] = (counts[v.candidate_id] || 0) + 1;
+        });
+      }
+      setVoteCounts(counts);
+
+      // 5. 사용자의 기존 투표 확인
+      const { data: myVote } = await supabase
+        .from("votes")
+        .select("candidate_id")
+        .eq("voter_id", user.id)
+        .in("room_id", roomIds)
+        .limit(1)
+        .single();
+
+      if (myVote) {
+        setSelectedCandidateId(myVote.candidate_id);
+        setAlreadyVoted(true);
+      }
+    } catch (err: any) {
+      setError("데이터를 불러오는 중 오류가 발생했습니다: " + err.message);
+      console.error("MvpVote load error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [user]);
 
-  if (authLoading) return <Container><Card>로딩 중...</Card></Container>;
-  if (!user) return null;
-
-  // 투표 제출: 사용자의 모든 참여 방에 대해 투표를 기록(기존 삭제 후 추가)
-  const submitVote = async () => {
-    if (!user || !selected || userRooms.length === 0) return;
-    setLoading(true);
-    try {
-      const { data: me } = await supabase.from('profiles').select('id').eq('username', user.username).single();
-      const voterId = me?.id;
-      const candidateId = memberProfiles[selected];
-      if (!voterId || !candidateId) throw new Error('프로필 ID를 찾을 수 없습니다.');
-
-      const roomIds = userRooms.map(r => r.id);
-
-      // 기존 투표 제거
-      await supabase.from('votes').delete().eq('voter_id', voterId).in('room_id', roomIds);
-
-      // 모든 참여 방에 동일한 투표 기록 (테스트용으로 간단히 처리)
-      const inserts = roomIds.map(id => ({ room_id: id, voter_id: voterId, candidate_id: candidateId }));
-      await supabase.from('votes').insert(inserts);
-
-      // 집계 새로고침
-      const { data: votes } = await supabase.from('votes').select('candidate_id').in('room_id', roomIds);
-      const newCounts: Record<string, number> = {};
-      if (votes) votes.forEach((v:any) => {
-        const username = Object.keys(memberProfiles).find(k => memberProfiles[k] === v.candidate_id);
-        if (username) newCounts[username] = (newCounts[username] || 0) + 1;
-      });
-      setCounts(newCounts);
-      alert('투표가 제출되었습니다.');
-    } catch (e:any) {
-      console.error('submitVote error', e);
-      alert('투표 중 오류가 발생했습니다: ' + (e.message || e));
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/login");
+    } else if (user) {
+      fetchVoteData();
     }
-    setLoading(false);
+  }, [user, authLoading, navigate, fetchVoteData]);
+
+  const handleVoteSubmit = async () => {
+    if (!user || !selectedCandidateId || userRoomIds.length === 0) return;
+
+    setIsLoading(true);
+    try {
+      // 기존 투표 삭제
+      await supabase
+        .from("votes")
+        .delete()
+        .eq("voter_id", user.id)
+        .in("room_id", userRoomIds);
+
+      // 새 투표 기록
+      const newVotes = userRoomIds.map((roomId) => ({
+        id: uuidv4(), // Generate a new UUID for each vote
+        room_id: roomId,
+        voter_id: user.id,
+        candidate_id: selectedCandidateId,
+      }));
+      const { error: insertError } = await supabase
+        .from("votes")
+        .insert(newVotes);
+
+      if (insertError) throw insertError;
+
+      alert("투표가 성공적으로 제출되었습니다.");
+      setAlreadyVoted(true);
+      // 투표 현황 다시 불러오기
+      fetchVoteData();
+    } catch (err: any) {
+      setError("투표 제출 중 오류가 발생했습니다: " + err.message);
+      console.error("submitVote error", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // 관리자 전용: 전체 집계로 MVP 확정
-  const finalize = async () => {
-    if (userRooms.length === 0) return;
+  const handleFinalize = async () => {
+    if (userRoomIds.length === 0) return;
+
+    const confirmed = window.confirm(
+      "MVP를 확정하고 투표를 종료하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    );
+    if (!confirmed) return;
+
+    setIsLoading(true);
     try {
-      const roomIds = userRooms.map(r => r.id);
-      const { data: votes } = await supabase.from('votes').select('candidate_id').in('room_id', roomIds);
-      if (!votes || votes.length === 0) { alert('투표가 없습니다.'); return; }
+      const { data: votes, error: votesError } = await supabase
+        .from("votes")
+        .select("candidate_id")
+        .in("room_id", userRoomIds);
 
-      const tallyId: Record<string, number> = {};
-      votes.forEach((v:any) => { tallyId[v.candidate_id] = (tallyId[v.candidate_id] || 0) + 1; });
-      let winnerId = Object.keys(tallyId)[0];
-      let max = tallyId[winnerId];
-      Object.entries(tallyId).forEach(([k, v]) => { if (v > max) { max = v; winnerId = k; } });
-
-      const { data: profile } = await supabase.from('profiles').select('username, realname').eq('id', winnerId).single();
-      if (!profile) { alert('MVP 프로필을 찾을 수 없습니다.'); return; }
-
-      // 온도 업데이트: 현재 값 읽고 +10
-      try {
-        const { data: tempRow } = await supabase.from('profiles').select('temperature').eq('id', winnerId).single();
-        const newTemp = (tempRow?.temperature || 0) + 10;
-        await supabase.from('profiles').update({ temperature: newTemp }).eq('id', winnerId);
-      } catch (e) {
-        console.error('MVP temperature update failed:', e);
+      if (votesError || !votes || votes.length === 0) {
+        alert("집계할 투표가 없습니다.");
+        setIsLoading(false);
+        return;
       }
 
-      // 기록 남기기
-      const mainRoomId = userRooms[0]?.id;
-      await supabase.from('mvp_history').insert([{ room_id: mainRoomId, mvp_id: winnerId, realname: profile.realname, date: new Date().toISOString().slice(0,10) }]);
+      const tally: Record<string, number> = {};
+      votes.forEach((v) => {
+        tally[v.candidate_id] = (tally[v.candidate_id] || 0) + 1;
+      });
 
-      alert(`MVP: ${profile.username} (${profile.realname ?? '실명 없음'})`);
-      navigate('/home');
-    } catch (e:any) {
-      console.error('finalize error', e);
-      alert('결과 확정 중 오류가 발생했습니다: ' + (e.message || e));
+      const winnerId = Object.keys(tally).reduce((a, b) =>
+        tally[a] > tally[b] ? a : b
+      );
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("username, realname, temperature")
+        .eq("id", winnerId)
+        .single();
+
+      if (profileError || !profile)
+        throw new Error("MVP 프로필을 찾을 수 없습니다.");
+
+      // 온도 업데이트
+      const newTemp = (profile.temperature || 0) + 10;
+      await supabase
+        .from("profiles")
+        .update({ temperature: newTemp })
+        .eq("id", winnerId);
+
+      // MVP 기록
+      await supabase.from("mvp_history").insert([
+        {
+          room_id: userRoomIds[0], // 대표 방 ID
+          mvp_id: winnerId,
+          realname: profile.realname,
+          date: new Date().toISOString().slice(0, 10),
+        },
+      ]);
+
+      alert(`최종 MVP는 ${profile.realname || profile.username}님입니다!`);
+      navigate("/home");
+    } catch (err: any) {
+      setError("결과 확정 중 오류가 발생했습니다: " + err.message);
+      console.error("finalize error", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (userRooms.length === 0) return <Container><Card>참여한 채팅방이 없습니다.</Card></Container>;
+  if (authLoading || isLoading) {
+    return (
+      <Container>
+        <Card>로딩 중...</Card>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Card>{error}</Card>
+      </Container>
+    );
+  }
 
   return (
     <Container>
-      <h2>지난 채팅 멤버 중 MVP 투표</h2>
+      <h2>지난 채팅 MVP 투표</h2>
       <Card>
-        <p>참여한 방: {userRooms.length}개</p>
+        <p>
+          {alreadyVoted
+            ? "투표를 변경할 수 있습니다."
+            : "가장 즐거운 시간을 만들어준 멤버에게 투표하세요."}
+        </p>
         <div>
-          {allMembers.map((m) => (
-            <div key={m} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.5rem 0',borderBottom:'1px solid #eee'}}>
-              <div>{m}</div>
-              <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
-                <div style={{fontWeight:700}}>{counts[m] || 0}표</div>
-                <input type="radio" name="candidate" value={m} checked={selected===m} onChange={() => setSelected(m)} />
+          {candidates.map((c) => (
+            <div key={c.id}>
+              <div>{c.realname || c.username}</div>
+              <div>
+                <div style={{ fontWeight: 700 }}>{voteCounts[c.id] || 0}표</div>
+                <input
+                  type="radio"
+                  name="candidate"
+                  value={c.id}
+                  checked={selectedCandidateId === c.id}
+                  onChange={() => setSelectedCandidateId(c.id)}
+                />
               </div>
             </div>
           ))}
         </div>
-        <div style={{marginTop:'1rem',display:'flex',gap:'8px'}}>
-          <Btn onClick={submitVote} disabled={loading || !selected}>투표 제출</Btn>
-          <Btn onClick={finalize}>결과 확정 (관리자)</Btn>
+        <div style={{ marginTop: "1rem", display: "flex", gap: "8px" }}>
+          <Btn
+            onClick={handleVoteSubmit}
+            disabled={!selectedCandidateId || isLoading}
+          >
+            {alreadyVoted ? "투표 변경" : "투표 제출"}
+          </Btn>
+          {/* 관리자 기능은 일단 주석 처리 또는 조건부 렌더링 */}
+          {/* <Btn onClick={handleFinalize} disabled={isLoading}>결과 확정 (관리자)</Btn> */}
         </div>
       </Card>
     </Container>
@@ -202,4 +310,3 @@ function MvpVote() {
 }
 
 export default MvpVote;
-
