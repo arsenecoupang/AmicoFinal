@@ -198,6 +198,8 @@ const List = styled.ul`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  height: 100%;
+  overflow-y: auto;
 `;
 
 const Row = styled.li`
@@ -225,13 +227,14 @@ const CommunityAndQuiz = styled.div`
   gap: 1rem;
   width: 100%;
   max-width: 48rem;
+  min-height: 400px;
   @media (max-width: 48rem) {
     flex-direction: column;
   }
 `;
 
 const Community = styled.div`
-  flex: 7;
+  flex: 4;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -245,6 +248,7 @@ const Community = styled.div`
     align-items: center;
     justify-content: space-between;
     padding: 0.5rem 0.25rem;
+    flex-shrink: 0;
   }
   & > div.header h1 {
     font-size: 1.25rem;
@@ -271,13 +275,16 @@ const Community = styled.div`
     background: #fff;
     border: 1px solid ${(props) => props.theme.baseHover};
     border-radius: 0;
-    min-height: 8rem;
+    flex: 1;
+    height: 100%;
     box-shadow: 0 4px 14px rgba(168, 198, 134, 0.12);
+    overflow-y: auto;
+    padding: 1rem;
   }
 `;
 
 const QuizPanel = styled.div`
-  flex: 3;
+  flex: 6;
   background-color: #fff;
   box-shadow: 0 2px 16px rgba(168, 198, 134, 0.1);
   border-radius: 0;
@@ -315,42 +322,101 @@ const PrimaryButton = styled.button`
   }
 `;
 
-const InfoText = styled.p`
-  margin: 0 0 1rem 0;
-  color: ${(props) => props.theme.text};
-  opacity: 0.7;
-  font-size: 0.9rem;
-`;
+// const InfoText = styled.p`
+//   margin: 0 0 1rem 0;
+//   color: ${(props) => props.theme.text};
+//   opacity: 0.7;
+//   font-size: 0.9rem;
+// `;
 
 function MainScreen() {
-  const { users, mvpHistory, ranking } = useStore();
+  const { users, mvpHistory } = useStore();
   const { user } = useAuth();
 
   const me = user ? users.find((u) => u.username === user.username) : null;
 
   const [classTempVal, setClassTempVal] = useState<number>(0);
   const [myTempVal, setMyTempVal] = useState<number>(0);
+  const [ranking, setRanking] = useState<any[]>([]); // DB 기반 랭킹
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [latestRoom, setLatestRoom] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const navigateToQuiz = () => navigate("/quiz");
+
+  // 현재 시간 업데이트
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // 1분마다 업데이트
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // MVP 투표 가능 시간 체크 (테스트용으로 항상 true)
+  const isMvpVotingTime = () => {
+    return true; // 테스트용으로 시간 제한 해제
+    // const hour = currentTime.getHours();
+    // return hour >= 18 && hour < 21;
+  };
+
+  // MVP 투표로 이동
+  const navigateToMvp = () => {
+    if (latestRoom) {
+      navigate("/mvp", { state: { roomId: latestRoom } });
+    } else {
+      // 테스트용 기본 roomId 사용
+      navigate("/mvp?roomId=92f60cb9-cfea-4b6d-8f5e-b0d5730eb975");
+    }
+  };
 
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!user) navigate('/login');
   }, [user, navigate]);
 
-  // fetch temps and subscribe to changes
+  // 가장 최근 방 찾기
+  useEffect(() => {
+    const findLatestRoom = async () => {
+      try {
+        const { data: rooms } = await supabase
+          .from('rooms')
+          .select('id, created_at')
+          .order('created_at', { ascending: false })
+          .limit(1);
+        
+        if (rooms && rooms.length > 0) {
+          setLatestRoom(rooms[0].id);
+        }
+      } catch (error) {
+        console.error('Error finding latest room:', error);
+      }
+    };
+
+    findLatestRoom();
+  }, []);
+
+  // fetch temps, ranking and subscribe to changes
   useEffect(() => {
     let channel: any;
-    async function fetchTemps() {
+    async function fetchTempsAndRanking() {
       try {
-        const { data } = await supabase.from('profiles').select('temperature, username');
+        // 온도 평균
+        const { data } = await supabase.from('profiles').select('temperature, username, realname, id').order('temperature', { ascending: false });
         if (data && data.length) {
           const temps = data.map((p: any) => Number(p.temperature || 0));
           const avg = temps.reduce((a: number, b: number) => a + b, 0) / temps.length;
           setClassTempVal(Math.max(0, Math.min(100, Math.round(avg))));
+          // 랭킹 - 별명만 사용
+          setRanking(data.map((p: any) => ({
+            id: p.id,
+            username: p.username,
+            nickname: p.realname || p.username, // realname을 별명으로 사용
+            temp: Math.max(0, Math.min(100, Math.round(p.temperature || 0)))
+          })));
         } else {
           setClassTempVal(0);
+          setRanking([]);
         }
         if (user) {
           const { data: meData } = await supabase.from('profiles').select('temperature').eq('username', user.username).maybeSingle();
@@ -358,17 +424,17 @@ function MainScreen() {
           setMyTempVal(Math.max(0, Math.min(100, Math.round(t))));
         }
       } catch (e) {
-        console.error('fetch temps error', e);
+        console.error('fetch temps/ranking error', e);
       }
     }
-    fetchTemps();
+    fetchTempsAndRanking();
 
     // realtime subscription to profiles changes
     try {
       channel = supabase
         .channel('public:profiles')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
-          fetchTemps();
+          fetchTempsAndRanking();
         })
         .subscribe();
     } catch (e) {
@@ -399,7 +465,7 @@ function MainScreen() {
               </ThermoTicks>
             </ThermoVisual>
             <ThermoMeta>
-              <ThermoPercent>{classTempVal}%</ThermoPercent>
+              <ThermoPercent>{classTempVal}°C</ThermoPercent>
               <ThermoHint>전체 평균</ThermoHint>
             </ThermoMeta>
           </Thermometer>
@@ -422,7 +488,7 @@ function MainScreen() {
               </ThermoTicks>
             </ThermoVisual>
             <ThermoMeta>
-              <ThermoPercent>{myTempVal}%</ThermoPercent>
+              <ThermoPercent>{myTempVal}°C</ThermoPercent>
               <ThermoHint>
                 {me ? `별명 ${me.nickname}` : "로그인 필요"}
               </ThermoHint>
@@ -466,19 +532,46 @@ function MainScreen() {
           <h2>일일 퀴즈</h2>
           <p>매일 새로운 밸런스 게임이 제공돼요!</p>
           <PrimaryButton onClick={navigateToQuiz}>퀴즈 시작</PrimaryButton>
+          
+          {/* MVP 투표 버튼 */}
+          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e5e5e5' }}>
+            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', fontWeight: '700' }}>MVP 투표</h3>
+            {isMvpVotingTime() ? (
+              <>
+                <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', opacity: '0.85' }}>
+                  테스트 모드: 언제든 투표 가능!
+                </p>
+                <PrimaryButton 
+                  onClick={navigateToMvp}
+                  style={{ background: '#FF6B6B', fontSize: '0.9rem' }}
+                >
+                  MVP 투표하기
+                </PrimaryButton>
+              </>
+            ) : (
+              <p style={{ margin: '0', fontSize: '0.9rem', opacity: '0.6' }}>
+                테스트 모드: 언제든 투표 가능!<br />
+                현재 시간: {currentTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            )}
+          </div>
         </QuizPanel>
       </CommunityAndQuiz>
 
       <Section>
         <SectionTitle>온도 랭킹</SectionTitle>
         <List>
+          {ranking.length === 0 && (
+            <Row>
+              <span>아직 온도 랭킹 데이터가 없습니다.</span>
+            </Row>
+          )}
           {ranking.map((u, idx) => (
             <Row key={u.id}>
               <span>
                 {idx + 1}. {u.nickname}
-                {u.revealed ? ` (${u.username})` : ""}
               </span>
-              <strong>{u.temp}%</strong>
+              <strong>{u.temp}°C</strong>
             </Row>
           ))}
         </List>
