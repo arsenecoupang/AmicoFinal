@@ -26,6 +26,27 @@ const Btn = styled.button`
   font-weight: 700;
 `;
 
+const VoteCountProgressOutline = styled.div`
+  background: linear-gradient(
+    180deg,
+    ${(props) => props.theme.baseHover} 0%,
+    ${(props) => props.theme.baseHover} 100%
+  );
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.2rem;
+    border-radius: 8px;
+`;
+
+const VoteCountProgressFill = styled.div<{ width: number }>`
+  background-color: ${(props) => props.theme.main};
+  height: 100%;
+  width: ${(props) => props.width}%;
+  transition: width 0.3s ease;
+  border-radius: 8px;
+  transition: height 0.8s ease-in-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+`;
+
 interface Room {
   id: string;
   members: string[] | string;
@@ -280,9 +301,27 @@ function MvpVote() {
         <div>
           {candidates.map((c) => (
             <div key={c.id}>
-              <div>{c.realname || c.username}</div>
+              <div>{c.username || c.username}</div>
               <div>
-                <div style={{ fontWeight: 700 }}>{voteCounts[c.id] || 0}표</div>
+                <VoteCountProgressOutline>
+                  <VoteCountProgressFill
+                    width={(() => {
+                      const totalVotes = Object.values(voteCounts).reduce(
+                        (a, b) => a + b,
+                        0
+                      );
+                      return totalVotes === 0
+                        ? 0
+                        : Math.round(
+                            ((voteCounts[c.id] || 0) / totalVotes) * 100
+                          );
+                    })()}
+                  >
+                    <div style={{ fontWeight: 700 }}>
+                      {voteCounts[c.id] || 0}표
+                    </div>
+                  </VoteCountProgressFill>
+                </VoteCountProgressOutline>
                 <input
                   type="radio"
                   name="candidate"

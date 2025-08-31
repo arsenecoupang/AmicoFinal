@@ -451,7 +451,28 @@ function MainScreen() {
   }, [user]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#f8f8f8",
+        }}
+      >
+        <img
+          src="/amico_logo_app_iconfh.png"
+          alt="amico logo"
+          style={{ width: "120px", marginBottom: "2rem" }}
+        />
+        <span style={{ color: "#7cae4c", fontWeight: 700, fontSize: "1.2rem" }}>
+          로딩 중...
+        </span>
+      </div>
+    );
   }
 
   const navigateToQuiz = () => navigate("/quiz");

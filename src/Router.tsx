@@ -6,7 +6,6 @@ import NotFound from "./screens/NotFound";
 import QuizScreen from "./screens/Quiz";
 import ChatScreen from "./screens/Chat";
 import MvpVoteScreen from "./screens/MvpVote";
-import MvpVoteTest from "./screens/MvpVote_new";
 import AuthCallback from "./screens/AuthCallback";
 import DbTest from "./debug/DbTest";
 import DebugRealtime from "./screens/DebugRealtime";
@@ -35,10 +34,6 @@ const router = createBrowserRouter([
       {
         path: "/debug/db",
         element: <DbTest />,
-      },
-      {
-        path: "/debug/mvp-test",
-        element: <MvpVoteTest />,
       },
       {
         path: "/debug/realtime",

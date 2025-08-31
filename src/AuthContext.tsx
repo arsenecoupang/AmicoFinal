@@ -23,7 +23,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const storedUser = localStorage.getItem("authUser");
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState<boolean>(true); // 초기 로딩 상태를 true로 설정
 
   useEffect(() => {
@@ -156,6 +163,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }
   };
+
+  localStorage.setItem("authUser", JSON.stringify(user));
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
