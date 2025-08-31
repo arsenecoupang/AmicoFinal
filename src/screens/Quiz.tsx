@@ -120,17 +120,17 @@ const OptionBase = styled.button`
 `;
 
 const OptionA = styled(OptionBase)`
-    background: ${props => props.theme.main};
-    color: #fff;
-    border: none;
-    &:hover { background: ${props => props.theme.mainHover}; }
+    background: #fff;
+    color: ${props=> props.theme.main};
+    border: 2px solid ${props => props.theme.main};
+    &:hover { color: ${props => props.theme.base}; background: ${props => props.theme.mainHover}; border-color: ${props => props.theme.mainHover}; }
 `;
 
 const OptionB = styled(OptionBase)`
     background: #fff;
     color: ${props => props.theme.main};
     border: 2px solid ${props => props.theme.main};
-    &:hover { color: ${props => props.theme.mainHover}; border-color: ${props => props.theme.mainHover}; }
+    &:hover { color:${props=>props.theme.base}; background-color: ${props => props.theme.mainHover}; border-color: ${props => props.theme.mainHover}; }
 `;
 
 function QuizScreen() {

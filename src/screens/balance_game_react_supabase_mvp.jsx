@@ -118,6 +118,7 @@ const seedPrompts = [
     option_b: "배드민턴",
   },
   { title: "아이폰 vs 갤럭시", option_a: "아이폰", option_b: "갤럭시" },
+  {"question": "1년 내내 한여름에만 살기 vs 한겨울에만 살기", "option1": "1년 내내 여름만!", "option2": "1년 내내 겨울만!"}
 ];
 
 function useSupabaseAuth() {

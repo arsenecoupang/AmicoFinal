@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { styled, keyframes } from "styled-components";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
@@ -231,13 +231,6 @@ const Bubble = styled.div<{me?: boolean}>`
   word-wrap: break-word;
 `;
 
-const System = styled.div`
-  align-self: center;
-  font-size: .85rem;
-  opacity: .7;
-  margin: .25rem 0 .5rem;
-`;
-
 const InputBar = styled.form`
   display: flex;
   gap: .5rem;
@@ -298,11 +291,14 @@ function ChatScreen() {
     
     const fetchRoomMembers = async () => {
       try {
+        console.log('Fetching room members for room:', roomId);
         const { data: roomData } = await supabase
           .from('rooms')
           .select('members')
           .eq('id', roomId)
           .single();
+          
+        console.log('Room data:', roomData);
           
         if (roomData && roomData.members) {
           let members = [];
@@ -313,12 +309,18 @@ function ChatScreen() {
               members = roomData.members;
             }
           } catch (e) {
+            console.error('Failed to parse members:', e);
             members = [];
           }
+          console.log('Parsed members for room:', roomId, 'Members:', members);
           setRoomMembers(members);
+        } else {
+          console.log('No members data found for room:', roomId);
+          setRoomMembers([]);
         }
       } catch (error) {
         console.warn('Failed to fetch room members:', error);
+        setRoomMembers([]);
       }
     };
     
@@ -329,39 +331,111 @@ function ChatScreen() {
   useEffect(() => {
     if (!roomId) return;
     
-    console.log('Setting up realtime subscription for room:', roomId);
+    console.log('🔄 Setting up realtime subscription for room:', roomId);
     
-    const subscription = supabase
-      .channel(`chat-room-${roomId}`)
+    const channel = supabase
+      .channel('public:chats')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'chats',
-        filter: `room_id=eq.${roomId}`
+        table: 'chats'
       }, payload => {
-        console.log('New message received:', payload.new);
+        console.log('🆕 New message received via realtime:', payload);
         const msg = payload.new;
+        
+        // 현재 방의 메시지인지 확인
+        if (msg.room_id !== roomId) {
+          console.log('� Message not for current room, ignoring');
+          return;
+        }
+        
+        console.log('📨 Message for current room:', msg);
+        
         setMsgs(prev => {
-          // 중복 메시지 방지
-          const exists = prev.find(m => m.id === msg.id);
-          if (exists) return prev;
+          console.log('📝 Current messages count:', prev.length);
           
-          return [...prev, {
+          // 중복 체크
+          const exists = prev.find(m => m.id === msg.id);
+          if (exists) {
+            console.log('⚠️ Message already exists:', msg.id);
+            return prev;
+          }
+          
+          // 임시 메시지 교체 체크
+          const tempIdx = prev.findIndex(m => 
+            m.id.startsWith('temp-') && 
+            m.sender === msg.username && 
+            m.text === msg.message
+          );
+          
+          if (tempIdx !== -1) {
+            console.log('🔄 Replacing temp message with real message');
+            const newMsgs = [...prev];
+            newMsgs[tempIdx] = {
+              id: msg.id,
+              sender: msg.username,
+              text: msg.message,
+              ts: new Date(msg.created_at).getTime()
+            };
+            return newMsgs;
+          }
+          
+          // 새로운 메시지 추가
+          console.log('✅ Adding new message from realtime:', msg.username, ':', msg.message);
+          const newMessage = {
             id: msg.id,
             sender: msg.username,
             text: msg.message,
             ts: new Date(msg.created_at).getTime()
-          }];
+          };
+          const updatedMsgs = [...prev, newMessage];
+          console.log('📊 Updated messages count:', updatedMsgs.length);
+          return updatedMsgs;
         });
       })
+      .subscribe((status, err) => {
+        console.log('🔗 Subscription status changed:', status);
+        if (err) console.error('❌ Subscription error:', err);
+        
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Successfully subscribed to realtime updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('❌ Failed to subscribe to realtime updates');
+        } else if (status === 'TIMED_OUT') {
+          console.error('⏰ Subscription timed out');
+        } else if (status === 'CLOSED') {
+          console.log('🔒 Subscription closed');
+        }
+      });
+      
+    return () => { 
+      console.log('🧹 Cleaning up subscription for room:', roomId);
+      supabase.removeChannel(channel); 
+    };
+  }, [roomId]);
+
+  // 방 멤버 실시간 업데이트
+  useEffect(() => {
+    if (!roomId) return;
+    
+    console.log('🏠 Setting up room subscription for:', roomId);
+    
+    const roomChannel = supabase
+      .channel('public:rooms')
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
-        table: 'rooms',
-        filter: `id=eq.${roomId}`
+        table: 'rooms'
       }, payload => {
-        console.log('Room updated:', payload.new);
+        console.log('🏠 Room updated via realtime:', payload);
         const roomData = payload.new;
+        
+        // 현재 방의 업데이트인지 확인
+        if (roomData.id !== roomId) {
+          console.log('🚫 Room update not for current room, ignoring');
+          return;
+        }
+        
         if (roomData.members) {
           let members = [];
           try {
@@ -371,18 +445,30 @@ function ChatScreen() {
               members = roomData.members;
             }
           } catch (e) {
+            console.error('❌ Failed to parse room members:', e);
             members = [];
           }
+          console.log('👥 Updated room members via realtime:', members);
           setRoomMembers(members);
         }
       })
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
+      .subscribe((status, err) => {
+        console.log('🔗 Room subscription status:', status);
+        if (err) console.error('❌ Room subscription error:', err);
       });
       
-    // 기존 메시지 불러오기
+    return () => {
+      console.log('🧹 Cleaning up room subscription');
+      supabase.removeChannel(roomChannel);
+    };
+  }, [roomId]);
+
+  // 기존 메시지 불러오기 (방 멤버가 로드된 후에)
+  useEffect(() => {
+    if (!roomId || roomMembers.length === 0) return;
+    
     (async () => {
-      console.log('Loading existing messages for room:', roomId);
+      console.log('Loading existing messages for room:', roomId, 'with members:', roomMembers);
       const { data, error } = await supabase
         .from('chats')
         .select('*')
@@ -392,7 +478,18 @@ function ChatScreen() {
       console.log('Existing messages:', { data, error });
       
       if (data) {
-        setMsgs(data.map((msg: any) => ({
+        // 방 멤버인 사용자의 메시지만 필터링
+        const filteredData = data.filter((msg: any) => {
+          const isMember = roomMembers.includes(msg.username);
+          if (!isMember) {
+            console.log('Filtering out existing message from non-member:', msg.username);
+          }
+          return isMember;
+        });
+        
+        console.log('Filtered messages:', filteredData.length, 'out of', data.length);
+        
+        setMsgs(filteredData.map((msg: any) => ({
           id: msg.id,
           sender: msg.username,
           text: msg.message,
@@ -400,12 +497,7 @@ function ChatScreen() {
         })));
       }
     })();
-    
-    return () => { 
-      console.log('Cleaning up subscription');
-      supabase.removeChannel(subscription); 
-    };
-  }, [roomId]);
+  }, [roomId, roomMembers]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
@@ -417,8 +509,9 @@ function ChatScreen() {
     console.log('Sending message:', { roomId, username: user.username, message: trimmed });
     
     // 즉시 UI에 메시지 추가 (낙관적 업데이트)
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const tempMessage = {
-      id: `temp-${Date.now()}`,
+      id: tempId,
       sender: user.username,
       text: trimmed,
       ts: Date.now()
@@ -427,59 +520,66 @@ function ChatScreen() {
     setMsgs(prev => [...prev, tempMessage]);
     setText("");
     
-    // 메시지 저장
-    const { data, error } = await supabase
-      .from('chats')
-      .insert([
-        {
-          room_id: roomId,
-          username: user.username,
-          message: trimmed
-        }
-      ])
-      .select()
-      .single();
-      
-    console.log('Message insert result:', { data, error });
-    
-    if (error) {
-      console.error('Failed to send message:', error);
-      // 실패 시 임시 메시지 제거하고 텍스트 복원
-      setMsgs(prev => prev.filter(m => m.id !== tempMessage.id));
-      setText(trimmed);
-      return;
-    }
-    
-    // 성공 시 임시 메시지를 실제 메시지로 교체
-    if (data) {
-      setMsgs(prev => prev.map(m => 
-        m.id === tempMessage.id 
-          ? {
-              id: data.id,
-              sender: data.username,
-              text: data.message,
-              ts: new Date(data.created_at).getTime()
-            }
-          : m
-      ));
-    }
-    
-    // 온도 5도 증가
     try {
-      const { data: tempData, error: tempError } = await supabase
-        .from('profiles')
-        .select('temperature')
-        .eq('username', user.username)
+      // 메시지 저장
+      console.log('💾 Attempting to insert message into database...');
+      console.log('💾 Insert data:', { room_id: roomId, username: user.username, message: trimmed });
+      
+      const { data, error } = await supabase
+        .from('chats')
+        .insert([
+          {
+            room_id: roomId,
+            username: user.username,
+            message: trimmed
+          }
+        ])
+        .select()
         .single();
         
-      if (tempData) {
-        await supabase
-          .from('profiles')
-          .update({ temperature: (tempData.temperature || 0) + 5 })
-          .eq('username', user.username);
+      console.log('💾 Message insert result:', { data, error });
+      
+      if (error) {
+        console.error('❌ Failed to send message:', error);
+        console.error('❌ Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        // 실패 시 임시 메시지 제거하고 텍스트 복원
+        setMsgs(prev => prev.filter(m => m.id !== tempId));
+        setText(trimmed);
+        return;
       }
-    } catch (e) {
-      console.error('Temperature update failed:', e);
+      
+      // 성공한 경우 실시간 구독에서 처리하므로 여기서는 별도 처리 불필요
+      // 실시간 구독이 임시 메시지를 실제 메시지로 교체할 것임
+      console.log('✅ Message successfully inserted:', data);
+      console.log('⏳ Waiting for realtime event to update UI...');
+      
+      // 온도 2도 증가
+      try {
+        const { data: tempData } = await supabase
+          .from('profiles')
+          .select('temperature')
+          .eq('username', user.username)
+          .single();
+          
+        if (tempData) {
+          await supabase
+            .from('profiles')
+            .update({ temperature: (tempData.temperature || 0) + 2 })
+            .eq('username', user.username);
+        }
+      } catch (e) {
+        console.error('Temperature update failed:', e);
+      }
+    } catch (error) {
+      console.error('Unexpected error during message send:', error);
+      // 실패 시 임시 메시지 제거하고 텍스트 복원
+      setMsgs(prev => prev.filter(m => m.id !== tempId));
+      setText(trimmed);
     }
   };
 
@@ -526,35 +626,54 @@ function ChatScreen() {
         </Header>
         <Board>
           <Messages>
-            {msgs.map((m, index) => {
-              const isMe = m.sender === user?.username;
-              const prevMsg = index > 0 ? msgs[index - 1] : null;
-              const showUsername = !prevMsg || prevMsg.sender !== m.sender;
-              
-              // 시간 포맷팅
-              const formatTime = (timestamp: number) => {
-                const date = new Date(timestamp);
-                const hours = date.getHours();
-                const minutes = date.getMinutes();
-                const ampm = hours >= 12 ? '오후' : '오전';
-                const displayHours = hours % 12 || 12;
-                return `${ampm} ${displayHours}:${minutes.toString().padStart(2, '0')}`;
-              };
-              
-              return (
-                <BubbleRow key={m.id} me={isMe}>
-                  <MessageContainer me={isMe}>
-                    {showUsername && (
-                      <Username me={isMe}>
-                        <span>{isMe ? '나' : m.sender}</span>
-                        <Timestamp>{formatTime(m.ts)}</Timestamp>
-                      </Username>
-                    )}
-                    <Bubble me={isMe}>{m.text}</Bubble>
-                  </MessageContainer>
-                </BubbleRow>
-              );
-            })}
+            {roomMembers.length === 0 && (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
+                멤버 정보를 불러오는 중...
+              </div>
+            )}
+            {roomMembers.length > 0 && msgs
+              .filter(m => {
+                // 방 멤버인지 확인하여 필터링
+                const isMember = roomMembers.includes(m.sender);
+                if (!isMember) {
+                  console.log('Filtering out message from non-member:', m.sender, 'Room members:', roomMembers);
+                }
+                return isMember;
+              })
+              .map((m, index, filteredMsgs) => {
+                const isMe = m.sender === user?.username;
+                const prevMsg = index > 0 ? filteredMsgs[index - 1] : null;
+                const showUsername = !prevMsg || prevMsg.sender !== m.sender;
+                
+                // 시간 포맷팅
+                const formatTime = (timestamp: number) => {
+                  const date = new Date(timestamp);
+                  const hours = date.getHours();
+                  const minutes = date.getMinutes();
+                  const ampm = hours >= 12 ? '오후' : '오전';
+                  const displayHours = hours % 12 || 12;
+                  return `${ampm} ${displayHours}:${minutes.toString().padStart(2, '0')}`;
+                };
+                
+                return (
+                  <BubbleRow key={m.id} me={isMe}>
+                    <MessageContainer me={isMe}>
+                      {showUsername && (
+                        <Username me={isMe}>
+                          <span>{isMe ? '나' : m.sender}</span>
+                          <Timestamp>{formatTime(m.ts)}</Timestamp>
+                        </Username>
+                      )}
+                      <Bubble me={isMe}>{m.text}</Bubble>
+                    </MessageContainer>
+                  </BubbleRow>
+                );
+              })}
+            {roomMembers.length > 0 && msgs.filter(m => roomMembers.includes(m.sender)).length === 0 && (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#888' }}>
+                첫 번째 메시지를 보내보세요!
+              </div>
+            )}
             <div ref={endRef} />
           </Messages>
           <InputBar onSubmit={onSubmit}>
