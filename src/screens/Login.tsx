@@ -237,7 +237,9 @@ function Login() {
           .single();
 
         if (existingUsername) {
-          throw new Error("이미 사용 중인 별명입니다. 다른 별명을 선택해주세요.");
+          throw new Error(
+            "이미 사용 중인 별명입니다. 다른 별명을 선택해주세요."
+          );
         }
 
         // 3. 중복 실명 검사 (같은 반 내에서)
@@ -249,7 +251,9 @@ function Login() {
           .single();
 
         if (existingRealname) {
-          throw new Error(`${formData.class}에 이미 같은 이름이 있습니다. 본명을 정확히 입력해주세요.`);
+          throw new Error(
+            `${formData.class}에 이미 같은 이름이 있습니다. 본명을 정확히 입력해주세요.`
+          );
         }
 
         const { data, error } = await supabase.auth.signUp({
