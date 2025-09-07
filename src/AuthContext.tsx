@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const isAdmin = () => {
-    return user?.role === 'admin' || user?.email === 'admin@amico.dev';
+    return user?.role === "admin" || user?.email === "admin@amico.dev";
   };
 
   localStorage.setItem("authUser", JSON.stringify(user));
