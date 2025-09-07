@@ -4,6 +4,12 @@
 
 **AMICO**는 학급 커뮤니티를 위한 React + TypeScript + Supabase 기반의 웹 애플리케이션입니다.
 
+### **현재 배포 상태**
+- **프로덕션 URL**: Netlify를 통해 배포 완료
+- **웹사이트 제목**: "Amico" 
+- **지원 반**: 1반~8반 (총 8개 반)
+- **Supabase 프로젝트**: `dajdwwsnhtxruxrwobcq` (활성 상태)
+
 ---
 
 ## 🏗️ 1. 전체 아키텍처 및 기술 스택
@@ -17,10 +23,11 @@
 
 ### **백엔드**
 
-- **Supabase**:
+- **Supabase** (프로젝트 ID: `dajdwwsnhtxruxrwobcq`):
   - PostgreSQL 데이터베이스
   - 실시간 구독 (Realtime)
   - 인증 시스템 (Auth)
+  - URL: `https://dajdwwsnhtxruxrwobcq.supabase.co`
 
 ---
 
@@ -232,7 +239,7 @@ const [formData, setFormData] = useState({
   password: "",
   email: "",
   realname: "",
-  class: "1반", // 기본값 설정
+  class: "1반", // 기본값 설정 (1반~8반 선택 가능)
 });
 
 const [errors, setErrors] = useState({
@@ -611,7 +618,7 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY,
   username VARCHAR(50) NOT NULL,
   realname VARCHAR(50),
-  class VARCHAR(10),
+  class VARCHAR(10), -- 1반~8반 선택
   temperature INTEGER DEFAULT 0,
   email VARCHAR(255)
 );
@@ -819,6 +826,20 @@ const UserAvatar = styled.div<{ isClickable?: boolean }>`
 "alreadyVoted 상태로 투표 여부를 추적하고, 조건부 렌더링으로 UI를 제어합니다. disabled 속성과 조건부 이벤트 핸들러로 이중 보안을 적용했습니다. 데이터베이스에서 기존 투표를 조회해 초기 상태를 설정합니다."
 
 ### **Q8: 투표 집계는 실시간으로 어떻게 업데이트되나요?**
+
+"Supabase Realtime으로 votes 테이블의 변경사항을 실시간 구독하고, 새로운 투표가 들어올 때마다 React 상태를 자동 업데이트합니다."
+
+### **Q9: 반 선택이 8반까지인 이유는?**
+
+"실제 학교 규모에 맞춰서 1반부터 8반까지로 제한했습니다. HTML select 요소와 validation 로직을 통해 올바른 반만 선택할 수 있도록 구현했습니다."
+
+### **Q10: 배포 과정에서 겪은 문제와 해결 방법은?**
+
+"Supabase 프로젝트 일시정지로 인한 DNS 해석 오류가 발생했습니다. 새로운 활성 프로젝트로 교체하고, 환경변수를 업데이트하여 해결했습니다. 또한 ESLint 경고를 CI=false로 우회하여 배포를 완료했습니다."
+
+### **Q11: 웹사이트 브랜딩은 어떻게 적용했나요?**
+
+"public/index.html에서 title을 'Amico'로 설정하고, amico 로고 SVG를 파비콘으로 사용했습니다. 사용자가 브라우저 탭에서 쉽게 식별할 수 있도록 했습니다."
 
 "다른 사용자의 투표가 완료될 때마다 fetchVoteCounts 함수를 호출해 최신 투표 현황을 가져옵니다. JavaScript reduce 함수로 후보자별 득표수를 계산하고, 퍼센티지로 변환해 진행률 바에 표시합니다."
 
