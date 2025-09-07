@@ -27,6 +27,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "daily-reset": "node ./scripts/dailyReset.cjs",
+    "create-admin": "node ./scripts/createAdmin.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },

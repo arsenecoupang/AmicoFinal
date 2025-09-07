@@ -201,7 +201,7 @@ function Login() {
         // 프로필 정보 가져오기
         const { data: profileData } = await supabase
           .from("profiles")
-          .select("username, realname")
+          .select("username, realname, role")
           .eq("id", data.user.id)
           .single();
 
@@ -211,11 +211,46 @@ function Login() {
           id: data.user.id,
           username: profileData?.username || "",
           email: formData.email,
+          role: profileData?.role || undefined,
         });
         navigate("/home");
       } else {
         // 회원가입
         console.log("Attempting signup with:", { email: formData.email });
+
+        // 1. 중복 이메일 검사
+        const { data: existingEmail } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("email", formData.email)
+          .single();
+
+        if (existingEmail) {
+          throw new Error("이미 사용 중인 이메일입니다.");
+        }
+
+        // 2. 중복 별명 검사
+        const { data: existingUsername } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("username", formData.username)
+          .single();
+
+        if (existingUsername) {
+          throw new Error("이미 사용 중인 별명입니다. 다른 별명을 선택해주세요.");
+        }
+
+        // 3. 중복 실명 검사 (같은 반 내에서)
+        const { data: existingRealname } = await supabase
+          .from("profiles")
+          .select("realname, class")
+          .eq("realname", formData.realname)
+          .eq("class", formData.class)
+          .single();
+
+        if (existingRealname) {
+          throw new Error(`${formData.class}에 이미 같은 이름이 있습니다. 본명을 정확히 입력해주세요.`);
+        }
 
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
