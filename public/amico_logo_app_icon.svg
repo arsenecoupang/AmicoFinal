@@ -1,0 +1,29 @@
+<!-- amico · app icon (rounded square, flat) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024"
+     style="--c-base:#F6F9F4; --c-main:#A8C686; --c-sub:#6B8E23; --c-accent:#D4A373">
+    <title>amico app icon</title>
+    <desc>작은 크기에서도 또렷하도록 단순화한 플랫 아이콘.</desc>
+    <defs>
+        <style>
+            .bg{fill:var(--c-main)}
+            .bubble{fill:var(--c-base)}
+            .leaf{fill:var(--c-sub)}
+            .dot{fill:var(--c-accent)}
+        </style>
+    </defs>
+
+    <!-- rounded container -->
+    <rect x="64" y="64" width="896" height="896" rx="224" ry="224" class="bg"/>
+
+    <!-- chat bubble (centered) -->
+    <g transform="translate(192,192)">
+        <rect x="48" y="48" width="480" height="480" rx="160" class="bubble"/>
+        <path d="M528 528 L528 680 L428 588 Z" class="bubble"/>
+
+        <!-- leaf -->
+        <path d="M330,360 C330,320 390,320 390,360 C390,400 330,400 330,360 Z" class="leaf"/>
+        <!-- friend dots -->
+        <circle cx="300" cy="300" r="18" class="dot"/>
+        <circle cx="410" cy="300" r="18" class="dot"/>
+    </g>
+</svg>
