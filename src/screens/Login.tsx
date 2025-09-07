@@ -1,56 +1,37 @@
 import React, { useState } from "react";
-import { styled, keyframes } from "styled-components";
+import { styled } from "styled-components";
 import { useAuth } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../db";
 
-const fadeInUp = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-`;
-
 const Container = styled.div`
   min-height: calc(100vh - 6.25rem);
-
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   padding: 0 1.5rem;
   background: ${(props) => props.theme.base};
-  position: relative;
-  overflow: hidden;
 `;
 
 const LoginForm = styled.form`
   background-color: #fff;
   padding: 2.5rem 2rem;
-  border-radius: 0;
-  box-shadow: 0 2px 16px rgba(168, 198, 134, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
   width: 100%;
   max-width: 26rem;
-  animation: ${fadeInUp} 0.8s cubic-bezier(0.5, 1.5, 0.5, 1) both;
   position: relative;
   h1 {
     color: ${(props) => props.theme.main};
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: 1.8rem;
+    font-weight: 600;
     margin-bottom: 1rem;
     text-align: center;
-    background: none;
-    -webkit-background-clip: initial;
-    -webkit-text-fill-color: initial;
-    background-clip: initial;
   }
   div {
     width: 100%;
@@ -70,19 +51,19 @@ const LoginInput = styled.input.withConfig({
   border: none;
   border-bottom: 2px solid
     ${(props) => (props.error ? "#e74c3c" : props.theme.sub)};
-  padding: 0.85rem 0.5rem;
-  margin-bottom: 1.2rem;
+  padding: 0.75rem 0.5rem;
+  margin-bottom: 1rem;
   width: 100%;
   box-sizing: border-box;
-  font-size: 1.15rem;
-  background: ${(props) => (props.error ? "#ffeaea" : props.theme.baseHover)};
+  font-size: 1rem;
+  background: ${(props) => (props.error ? "#ffeaea" : "#f8f9fa")};
   color: ${(props) => props.theme.text};
-  border-radius: 0;
-  transition: border-color 0.25s, background 0.25s;
+  border-radius: 4px;
+  transition: border-color 0.2s, background 0.2s;
   &::placeholder {
-    color: ${(props) => props.theme.textHover};
+    color: #6c757d;
     opacity: 0.7;
-    font-weight: 500;
+    font-weight: 400;
   }
   &:focus {
     outline: none;
@@ -92,25 +73,50 @@ const LoginInput = styled.input.withConfig({
   }
 `;
 
+const LoginSelect = styled.select<{ error?: boolean }>`
+  width: 100%;
+  padding: 0.75rem 0.5rem;
+  border: none;
+  border-bottom: 2px solid
+    ${(props) => (props.error ? "#e74c3c" : props.theme.sub)};
+  background: #f8f9fa;
+  font-size: 1rem;
+  font-weight: 400;
+  font-family: inherit;
+  color: ${(props) => props.theme.text};
+  border-radius: 4px;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+  margin-bottom: 1rem;
+
+  &:focus {
+    outline: none;
+    border-bottom: 2px solid
+      ${(props) => (props.error ? "#e74c3c" : props.theme.subHover)};
+    background: #fff;
+  }
+
+  option {
+    background: #fff;
+    color: ${(props) => props.theme.text};
+  }
+`;
 const LoginButton = styled.button`
   width: 100%;
-  padding: 0.85rem 0;
+  padding: 0.75rem 0;
   background: ${(props) => props.theme.main};
   color: #fff;
   border: none;
-  border-radius: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   margin-top: 1rem;
-  box-shadow: 0 2px 12px rgba(168, 198, 134, 0.1);
-  transition: background 0.25s, transform 0.15s;
-  letter-spacing: 0.03em;
+  transition: background 0.2s;
   &:hover,
   &:focus {
     background: ${(props) => props.theme.mainHover};
     outline: none;
-    transform: scale(1.04);
   }
 `;
 
@@ -129,19 +135,23 @@ function Login() {
     password: "",
     email: "",
     realname: "",
+    class: "1반",
   });
   const [errors, setErrors] = useState({
     username: false,
     password: false,
     email: false,
     realname: false,
+    class: false,
   });
   const { login } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
     setErrors({ ...errors, [name]: false });
@@ -157,13 +167,15 @@ function Login() {
       // email is required for login and signup
       email: formData.email.trim() === "",
       realname: !isLogin && formData.realname.trim() === "",
+      class: !isLogin && formData.class.trim() === "",
     };
     setErrors(newErrors);
     if (
       newErrors.username ||
       newErrors.password ||
       newErrors.email ||
-      newErrors.realname
+      newErrors.realname ||
+      newErrors.class
     )
       return;
     setLoading(true);
@@ -213,6 +225,7 @@ function Login() {
             data: {
               username: formData.username,
               realname: formData.realname,
+              class: formData.class,
             },
           },
         });
@@ -248,6 +261,7 @@ function Login() {
             email: formData.email,
             username: formData.username,
             realname: formData.realname,
+            class: formData.class,
             temperature: 0,
           },
         ]);
@@ -304,6 +318,30 @@ function Login() {
               {errors.realname && (
                 <HelperText style={{ color: "#e74c3c" }}>
                   실제 이름을 입력하세요.
+                </HelperText>
+              )}
+
+              <HelperText>반</HelperText>
+              <LoginSelect
+                name="class"
+                value={formData.class}
+                onChange={handleInputChange}
+                error={errors.class}
+              >
+                <option value="1반">1반</option>
+                <option value="2반">2반</option>
+                <option value="3반">3반</option>
+                <option value="4반">4반</option>
+                <option value="5반">5반</option>
+                <option value="6반">6반</option>
+                <option value="7반">7반</option>
+                <option value="8반">8반</option>
+                <option value="9반">9반</option>
+                <option value="10반">10반</option>
+              </LoginSelect>
+              {errors.class && (
+                <HelperText style={{ color: "#e74c3c" }}>
+                  반을 선택해주세요.
                 </HelperText>
               )}
             </>

@@ -1,0 +1,38 @@
+# React 공식 문서 기준
+- Component
+- Props
+- State (useState)
+- Effect (useEffect)
+- Context (React Context, useContext)
+- Hooks (useState, useEffect, useContext, useRef, useNavigate, useLocation)
+- Router (react-router-dom, BrowserRouter, Route, Routes, useNavigate, useLocation)
+- Conditional Rendering
+- Event Handling
+- JSX
+- Custom Hook
+- TypeScript (타입 정의, 인터페이스, 타입 추론 등)
+
+# Supabase 공식 문서 기준
+- supabase-js
+- createClient
+- Authentication (signUp, signInWithPassword, signOut, onAuthStateChange)
+- Database (from, select, insert, update, delete, eq, order, single)
+- Realtime (channel, on, subscribe, removeChannel)
+- Storage (파일 업로드/다운로드, 필요시)
+- Row Level Security
+- Table (profiles, questions, rooms, chats 등)
+
+# styled-components 공식 문서 기준
+- styled-components
+- styled
+- ThemeProvider
+- GlobalStyle
+- props
+- withConfig
+- CSS-in-JS
+
+# 기타 공식 명칭
+- package.json
+- npm scripts (start, build, test, eject)
+- .env (환경변수)
+- TypeScript Declaration (.d.ts)

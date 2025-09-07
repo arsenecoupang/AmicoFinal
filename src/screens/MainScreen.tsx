@@ -6,319 +6,252 @@ import { useAuth } from "../AuthContext";
 import { supabase } from "../db";
 
 const MainScreenDiv = styled.div`
+  min-height: calc(100vh - 6.25rem);
   width: 100%;
-  height: calc(100vh - 6.25rem);
-  padding: 2rem;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  gap: 1.5rem;
-  overflow-y: auto;
-  padding-top: 4rem;
+  background: #f9f9f9;
+  padding: 0;
 `;
 
-const TempsRow = styled.div`
-  max-width: 48rem;
+// Hero Section with Welcome Message
+const HeroSection = styled.div`
+  background: ${(props) => props.theme.main};
+  color: white;
+  padding: 2rem;
+  text-align: center;
+`;
+
+const WelcomeTitle = styled.h1`
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+`;
+
+const WelcomeSubtitle = styled.p`
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0 0 1.5rem 0;
+`;
+
+const QuickActions = styled.div`
   display: flex;
   gap: 1rem;
-  width: 100%;
-  @media (max-width: 48rem) {
-    flex-direction: column;
-  }
+  justify-content: center;
+  flex-wrap: wrap;
 `;
 
-const TempCard = styled.div`
-  flex: 1;
-  background: #fff;
-  border: 1px solid ${(props) => props.theme.baseHover};
-  border-radius: 0;
-  box-shadow: 0 6px 18px rgba(168, 198, 134, 0.15);
-  padding: 1.25rem 1rem;
+const ActionButton = styled.button<{ variant?: "primary" | "secondary" }>`
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  transition: transform 0.15s ease, box-shadow 0.2s ease;
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(168, 198, 134, 0.18);
+  gap: 0.5rem;
+
+  ${(props) =>
+    props.variant === "primary"
+      ? `
+    background: white;
+    color: ${props.theme.main};
+    
+    &:hover {
+      background: #f5f5f5;
+    }
+  `
+      : `
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  `}
+`;
+
+// Main Content Container
+const ContentContainer = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: 2fr 1fr;
   }
 `;
 
-const TempTitle = styled.h3`
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: ${(props) => props.theme.text};
-  letter-spacing: 0.01em;
-`;
-
-const Thermometer = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-end;
-`;
-
-const ThermoVisual = styled.div`
-  position: relative;
-  width: 40px;
-  height: 140px;
-`;
-
-const ThermoTube = styled.div`
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 110px;
-  background: linear-gradient(
-    180deg,
-    ${(props) => props.theme.baseHover} 0%,
-    ${(props) => props.theme.baseHover} 100%
-  );
+// Modern Card Design
+const Card = styled.div<{ span?: number }>`
+  background: white;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const ThermoFill = styled.div<{ percent: number }>`
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: ${(props) => Math.max(0, Math.min(props.percent, 100))}%;
-  background: linear-gradient(
-    180deg,
-    ${(props) => props.theme.main} 0%,
-    ${(props) => props.theme.mainHover || props.theme.main} 100%
-  );
-  border-radius: 8px;
-  transition: height 0.8s ease-in-out;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-`;
-
-const ThermoBulb = styled.div`
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    ${(props) => props.theme.main} 0%,
-    ${(props) => props.theme.mainHover || props.theme.main} 100%
-  );
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  border: 3px solid ${(props) => props.theme.main};
-`;
-
-const ThermoMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-`;
-
-const ThermoPercent = styled.span`
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: ${(props) => props.theme.text};
-  line-height: 1;
-`;
-
-const ThermoHint = styled.span`
-  font-size: 0.85rem;
-  color: ${(props) => props.theme.text};
-  opacity: 0.7;
-`;
-
-const ThermoTicks = styled.div`
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 110px;
-  pointer-events: none;
-`;
-
-const ThermoTick = styled.div`
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 2px;
-  background: ${(props) => props.theme.text};
-  opacity: 0.3;
-
-  &:nth-child(1) {
-    top: 0;
-  }
-  &:nth-child(2) {
-    top: 22px;
-  }
-  &:nth-child(3) {
-    top: 44px;
-  }
-  &:nth-child(4) {
-    top: 66px;
-  }
-  &:nth-child(5) {
-    top: 88px;
-  }
-  &:nth-child(6) {
-    top: 110px;
-  }
-`;
-
-const Section = styled.section`
-  max-width: 48rem;
-  width: 100%;
-  background: #fff;
-  border: 1px solid ${(props) => props.theme.baseHover};
-  border-radius: 0;
   padding: 1.5rem;
-  box-shadow: 0 4px 14px rgba(168, 198, 134, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e5e5;
+
+  ${(props) =>
+    props.span &&
+    `
+    @media (min-width: 768px) {
+      grid-column: span ${props.span};
+    }
+  `}
 `;
 
-const SectionTitle = styled.h2`
-  margin: 0 0 0.5rem 0;
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+`;
+
+const CardTitle = styled.h3`
   font-size: 1.1rem;
-  font-weight: 900;
+  font-weight: 600;
   color: ${(props) => props.theme.text};
-  letter-spacing: 0.01em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
-const List = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
+const CardIcon = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: ${(props) => props.theme.main};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+`;
+
+// Temperature Display (Modern Approach)
+const TempGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+`;
+
+const TempCard = styled.div<{ isPersonal?: boolean }>`
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: ${(props) =>
+    props.isPersonal
+      ? `linear-gradient(135deg, ${props.theme.main} 0%, ${props.theme.mainHover} 100%)`
+      : `linear-gradient(135deg, #64748b 0%, #475569 100%)`};
+  color: white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(20px, -20px);
+  }
+`;
+
+const TempValue = styled.div`
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+`;
+
+const TempLabel = styled.div`
+  font-size: 0.875rem;
+  opacity: 0.9;
+  font-weight: 500;
+`;
+
+// List Items
+const ListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  height: 100%;
-  overflow-y: auto;
 `;
 
-const Row = styled.li`
+const ListItem = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background: ${(props) => props.theme.baseHover};
-  border-radius: 0;
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
-  transition: background 0.2s ease;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &:hover {
-    background: ${(props) => props.theme.baseHover};
-    opacity: 0.8;
-  }
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
 `;
 
-const CommunityAndQuiz = styled.div`
+const ListItemLeft = styled.div`
   display: flex;
-  gap: 1rem;
-  width: 100%;
-  max-width: 48rem;
-  min-height: 400px;
-  @media (max-width: 48rem) {
-    flex-direction: column;
-  }
-`;
-
-const Community = styled.div`
-  flex: 4;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  background: #fff;
-  border: 1px solid ${(props) => props.theme.baseHover};
-  border-radius: 0;
-  padding: 1rem;
-  box-shadow: 0 4px 14px rgba(168, 198, 134, 0.12);
-  & > div.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem 0.25rem;
-    flex-shrink: 0;
-  }
-  & > div.header h1 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    margin: 0;
-    color: ${(props) => props.theme.text};
-  }
-  & > div.header button {
-    background: transparent;
-    color: ${(props) => props.theme.accent};
-    border: 1px solid ${(props) => props.theme.baseHover};
-    border-radius: 0.25rem;
-    padding: 0.4rem 0.65rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
-  }
-  & > div.header button:hover {
-    background: ${(props) => props.theme.accent};
-    color: #fff;
-    transform: translateY(-1px);
-  }
-  & > div.content {
-    background: #fff;
-    border: 1px solid ${(props) => props.theme.baseHover};
-    border-radius: 0;
-    flex: 1;
-    height: 100%;
-    box-shadow: 0 4px 14px rgba(168, 198, 134, 0.12);
-    overflow-y: auto;
-    padding: 1rem;
-  }
-`;
-
-const QuizPanel = styled.div`
-  flex: 6;
-  background-color: #fff;
-  box-shadow: 0 2px 16px rgba(168, 198, 134, 0.1);
-  border-radius: 0;
-  padding: 2.5rem 2rem;
-  border: 1px solid ${(props) => props.theme.baseHover};
-  display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.75rem;
-  h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: ${(props) => props.theme.text};
-  }
-  p {
-    margin: 0 0 0.5rem 0;
-    color: ${(props) => props.theme.text};
-    opacity: 0.85;
-  }
 `;
 
-const PrimaryButton = styled.button`
+const ListItemRank = styled.div`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   background: ${(props) => props.theme.main};
-  color: #fff;
-  border: none;
-  border-radius: 0.25rem;
-  padding: 0.65rem 0.9rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  box-shadow: 0 4px 14px rgba(168, 198, 134, 0.18);
-  transition: background 0.2s ease, transform 0.1s ease;
-  &:hover {
-    background: ${(props) => props.theme.mainHover};
-    transform: translateY(-1px);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+`;
+
+const ListItemInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+`;
+
+const ListItemName = styled.span`
+  font-weight: 600;
+  color: ${(props) => props.theme.text};
+`;
+
+const ListItemMeta = styled.span`
+  font-size: 0.75rem;
+  color: ${(props) => props.theme.text};
+  opacity: 0.6;
+`;
+
+const ListItemValue = styled.span`
+  font-weight: 700;
+  color: ${(props) => props.theme.main};
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: ${(props) => props.theme.text};
+  opacity: 0.6;
+
+  .message {
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
   }
 `;
 
@@ -340,6 +273,8 @@ function MainScreen() {
   const [ranking, setRanking] = useState<any[]>([]); // DB 기반 랭킹
   const [currentTime, setCurrentTime] = useState(new Date());
   const [latestRoom, setLatestRoom] = useState<string | null>(null);
+  const [recentMvps, setRecentMvps] = useState<any[]>([]); // 최근 3일 MVP
+  const [classComparison, setClassComparison] = useState<any[]>([]); // 학급별 온도 비교
 
   const navigate = useNavigate();
 
@@ -377,6 +312,86 @@ function MainScreen() {
     };
 
     findLatestRoom();
+  }, []);
+
+  // 최근 3일간 MVP 데이터 가져오기
+  useEffect(() => {
+    const fetchRecentMvps = async () => {
+      try {
+        const threeDaysAgo = new Date();
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        const threeDaysAgoStr = threeDaysAgo.toISOString().split("T")[0];
+
+        const { data: mvps } = await supabase
+          .from("mvp_votes")
+          .select(
+            `
+            id,
+            created_at,
+            room_id,
+            profiles!mvp_votes_winner_id_fkey (
+              username,
+              realname
+            )
+          `
+          )
+          .gte("created_at", threeDaysAgoStr)
+          .order("created_at", { ascending: false });
+
+        if (mvps) {
+          setRecentMvps(mvps);
+        }
+      } catch (error) {
+        console.error("Error fetching recent MVPs:", error);
+        setRecentMvps([]);
+      }
+    };
+
+    fetchRecentMvps();
+  }, []);
+
+  // 학급별 온도 비교 데이터 가져오기
+  useEffect(() => {
+    const fetchClassComparison = async () => {
+      try {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("class, temperature")
+          .not("class", "is", null);
+
+        if (profiles) {
+          // 학급별 평균 온도 계산
+          const classMap = new Map();
+          profiles.forEach((profile) => {
+            const className = profile.class || "미지정";
+            const temp = profile.temperature || 0;
+
+            if (!classMap.has(className)) {
+              classMap.set(className, { total: 0, count: 0 });
+            }
+
+            const classData = classMap.get(className);
+            classData.total += temp;
+            classData.count += 1;
+          });
+
+          const comparison = Array.from(classMap.entries())
+            .map(([className, data]) => ({
+              className,
+              avgTemp: Math.round(data.total / data.count),
+              memberCount: data.count,
+            }))
+            .sort((a, b) => b.avgTemp - a.avgTemp);
+
+          setClassComparison(comparison);
+        }
+      } catch (error) {
+        console.error("Error fetching class comparison:", error);
+        setClassComparison([]);
+      }
+    };
+
+    fetchClassComparison();
   }, []);
 
   useEffect(() => {
@@ -496,161 +511,143 @@ function MainScreen() {
 
   return (
     <MainScreenDiv>
-      <TempsRow>
-        <TempCard>
-          <TempTitle>학급 온도</TempTitle>
-          <Thermometer>
-            <ThermoVisual>
-              <ThermoTube>
-                <ThermoFill percent={classTempVal} />
-              </ThermoTube>
-              <ThermoBulb />
-              <ThermoTicks>
-                {[0, 20, 40, 60, 80, 100].map((p) => (
-                  <ThermoTick
-                    key={`class-${p}`}
-                    style={{ top: `${110 - (110 * p) / 100}px` }}
-                  />
-                ))}
-              </ThermoTicks>
-            </ThermoVisual>
-            <ThermoMeta>
-              <ThermoPercent>{classTempVal}°C</ThermoPercent>
-              <ThermoHint>전체 평균</ThermoHint>
-            </ThermoMeta>
-          </Thermometer>
-        </TempCard>
-        <TempCard>
-          <TempTitle>나의 온도</TempTitle>
-          <Thermometer>
-            <ThermoVisual>
-              <ThermoTube>
-                <ThermoFill percent={myTempVal} />
-              </ThermoTube>
-              <ThermoBulb />
-              <ThermoTicks>
-                {[0, 20, 40, 60, 80, 100].map((p) => (
-                  <ThermoTick
-                    key={`my-${p}`}
-                    style={{ top: `${110 - (110 * p) / 100}px` }}
-                  />
-                ))}
-              </ThermoTicks>
-            </ThermoVisual>
-            <ThermoMeta>
-              <ThermoPercent>{myTempVal}°C</ThermoPercent>
-              <ThermoHint>
-                {me ? `별명 ${me.nickname}` : "로그인 필요"}
-              </ThermoHint>
-            </ThermoMeta>
-          </Thermometer>
-        </TempCard>
-      </TempsRow>
+      {/* Hero Section */}
+      <HeroSection>
+        <WelcomeTitle>안녕하세요, {user?.username || "사용자"}님!</WelcomeTitle>
+        <WelcomeSubtitle>
+          반친구들과 연결되어 다양한 이야기를 만나보세요.
+        </WelcomeSubtitle>
+        <QuickActions>
+          <ActionButton variant="primary" onClick={navigateToQuiz}>
+            오늘의 퀴즈
+          </ActionButton>
+          <ActionButton variant="secondary" onClick={() => navigate("/chat")}>
+            채팅방 입장
+          </ActionButton>
+          <ActionButton variant="secondary" onClick={navigateToMvp}>
+            MVP 투표
+          </ActionButton>
+        </QuickActions>
+      </HeroSection>
 
-      <CommunityAndQuiz>
-        <Community>
-          <div className="header">
-            <h1>MVP 히스토리</h1>
-          </div>
-          <div className="content">
-            <List>
-              {mvpHistory.length === 0 && (
-                <Row>
-                  <span>아직 MVP 기록이 없습니다.</span>
-                </Row>
+      {/* Main Content */}
+      <ContentContainer>
+        {/* Left Column - Main Content */}
+        <div>
+          {/* Temperature Cards */}
+          <Card span={2}>
+            <CardHeader>
+              <CardTitle>
+                <CardIcon>T</CardIcon>
+                학급 온도계
+              </CardTitle>
+            </CardHeader>
+            <TempGrid>
+              <TempCard>
+                <TempValue>{classTempVal}°C</TempValue>
+                <TempLabel>학급 평균</TempLabel>
+              </TempCard>
+              <TempCard isPersonal>
+                <TempValue>{myTempVal}°C</TempValue>
+                <TempLabel>나의 온도</TempLabel>
+              </TempCard>
+            </TempGrid>
+          </Card>
+
+          {/* Rankings */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <CardIcon>R</CardIcon>
+                온도 랭킹 TOP 5
+              </CardTitle>
+            </CardHeader>
+            <ListContainer>
+              {ranking.length === 0 ? (
+                <EmptyState>
+                  <div className="message">아직 랭킹 데이터가 없습니다</div>
+                </EmptyState>
+              ) : (
+                ranking.slice(0, 5).map((u, idx) => (
+                  <ListItem key={u.id}>
+                    <ListItemLeft>
+                      <ListItemRank>{idx + 1}</ListItemRank>
+                      <ListItemInfo>
+                        <ListItemName>{u.nickname}</ListItemName>
+                        <ListItemMeta>학급 멤버</ListItemMeta>
+                      </ListItemInfo>
+                    </ListItemLeft>
+                    <ListItemValue>{u.temp}°C</ListItemValue>
+                  </ListItem>
+                ))
               )}
-              {mvpHistory.map((rec) => {
-                const u = users.find((x) => x.id === rec.userId);
-                const name = u
-                  ? u.revealed
-                    ? u.username
-                    : u.nickname
-                  : "unknown";
-                return (
-                  <Row key={rec.id}>
-                    <span>
-                      {rec.date} · {rec.roomLabel}
-                    </span>
-                    <strong>{name}</strong>
-                  </Row>
-                );
-              })}
-            </List>
-          </div>
-        </Community>
-        <QuizPanel>
-          <h2>일일 퀴즈</h2>
-          <p>매일 새로운 밸런스 게임이 제공돼요!</p>
-          <PrimaryButton onClick={navigateToQuiz}>퀴즈 시작</PrimaryButton>
+            </ListContainer>
+          </Card>
 
-          {/* MVP 투표 버튼 */}
-          <div
-            style={{
-              marginTop: "1.5rem",
-              paddingTop: "1.5rem",
-              borderTop: "1px solid #e5e5e5",
-            }}
-          >
-            <h3
-              style={{
-                margin: "0 0 0.5rem 0",
-                fontSize: "1.1rem",
-                fontWeight: "700",
-              }}
-            >
-              MVP 투표
-            </h3>
-            {isMvpVotingTime() ? (
-              <>
-                <p
-                  style={{
-                    margin: "0 0 1rem 0",
-                    fontSize: "0.9rem",
-                    opacity: "0.85",
-                  }}
-                >
-                  테스트 모드: 언제든 투표 가능!
-                </p>
-                <PrimaryButton
-                  onClick={navigateToMvp}
-                  style={{ background: "#FF6B6B", fontSize: "0.9rem" }}
-                >
-                  MVP 투표하기
-                </PrimaryButton>
-              </>
+          {/* Class Comparison */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                <CardIcon>C</CardIcon>
+                학급별 온도 비교
+              </CardTitle>
+            </CardHeader>
+            <ListContainer>
+              {classComparison.length === 0 ? (
+                <EmptyState>
+                  <div className="message">학급 데이터를 불러오는 중...</div>
+                </EmptyState>
+              ) : (
+                classComparison.map((classData, idx) => (
+                  <ListItem key={classData.className}>
+                    <ListItemLeft>
+                      <ListItemRank>{idx + 1}</ListItemRank>
+                      <ListItemInfo>
+                        <ListItemName>{classData.className}</ListItemName>
+                        <ListItemMeta>{classData.memberCount}명</ListItemMeta>
+                      </ListItemInfo>
+                    </ListItemLeft>
+                    <ListItemValue>{classData.avgTemp}°C</ListItemValue>
+                  </ListItem>
+                ))
+              )}
+            </ListContainer>
+          </Card>
+        </div>
+
+        {/* Right Column - MVP History */}
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <CardIcon>M</CardIcon>
+              MVP 명예의 전당
+            </CardTitle>
+          </CardHeader>
+          <ListContainer>
+            {recentMvps.length === 0 ? (
+              <EmptyState>
+                <div className="message">최근 3일간 MVP 기록이 없습니다</div>
+              </EmptyState>
             ) : (
-              <p style={{ margin: "0", fontSize: "0.9rem", opacity: "0.6" }}>
-                테스트 모드: 언제든 투표 가능!
-                <br />
-                현재 시간:{" "}
-                {currentTime.toLocaleTimeString("ko-KR", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+              recentMvps.map((mvp) => (
+                <ListItem key={mvp.id}>
+                  <ListItemInfo>
+                    <ListItemName>
+                      {mvp.profiles?.realname ||
+                        mvp.profiles?.username ||
+                        "unknown"}
+                    </ListItemName>
+                    <ListItemMeta>
+                      {new Date(mvp.created_at).toLocaleDateString()} ·{" "}
+                      {mvp.room_id?.slice(0, 8)}...
+                    </ListItemMeta>
+                  </ListItemInfo>
+                </ListItem>
+              ))
             )}
-          </div>
-        </QuizPanel>
-      </CommunityAndQuiz>
-
-      <Section>
-        <SectionTitle>온도 랭킹</SectionTitle>
-        <List>
-          {ranking.length === 0 && (
-            <Row>
-              <span>아직 온도 랭킹 데이터가 없습니다.</span>
-            </Row>
-          )}
-          {ranking.map((u, idx) => (
-            <Row key={u.id}>
-              <span>
-                {idx + 1}. {u.nickname}
-              </span>
-              <strong>{u.temp}°C</strong>
-            </Row>
-          ))}
-        </List>
-      </Section>
+          </ListContainer>
+        </Card>
+      </ContentContainer>
     </MainScreenDiv>
   );
 }
