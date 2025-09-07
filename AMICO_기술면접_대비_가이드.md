@@ -5,8 +5,9 @@
 **AMICO**는 학급 커뮤니티를 위한 React + TypeScript + Supabase 기반의 웹 애플리케이션입니다.
 
 ### **현재 배포 상태**
+
 - **프로덕션 URL**: Netlify를 통해 배포 완료
-- **웹사이트 제목**: "Amico" 
+- **웹사이트 제목**: "Amico"
 - **지원 반**: 1반~8반 (총 8개 반)
 - **Supabase 프로젝트**: `dajdwwsnhtxruxrwobcq` (활성 상태)
 

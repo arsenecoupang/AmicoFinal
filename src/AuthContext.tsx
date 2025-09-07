@@ -11,6 +11,7 @@ export type User = {
   id: string; // Add id property
   username: string;
   email?: string;
+  role?: string; // 관리자 권한 필드 추가
 };
 
 interface AuthContextType {
@@ -18,6 +19,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => void;
   loading: boolean;
+  isAdmin: () => boolean; // 관리자 권한 확인 함수
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // 프로필 정보 가져오기
           const { data: profileData, error: profileError } = await supabase
             .from("profiles")
-            .select("username, realname")
+            .select("username, realname, role")
             .eq("id", session.user.id)
             .single();
 
@@ -62,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               id: session.user.id, // Pass id to user object
               username: profileData.username,
               email: (session.user as any).email || "",
+              role: profileData.role || undefined,
             });
           }
         } else {
@@ -164,10 +167,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const isAdmin = () => {
+    return user?.role === 'admin' || user?.email === 'admin@amico.dev';
+  };
+
   localStorage.setItem("authUser", JSON.stringify(user));
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );
