@@ -336,8 +336,6 @@ function Login() {
                 <option value="6반">6반</option>
                 <option value="7반">7반</option>
                 <option value="8반">8반</option>
-                <option value="9반">9반</option>
-                <option value="10반">10반</option>
               </LoginSelect>
               {errors.class && (
                 <HelperText style={{ color: "#e74c3c" }}>
