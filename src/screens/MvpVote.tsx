@@ -328,7 +328,7 @@ function MvpVote() {
       const { error: deleteChatsError } = await supabase
         .from("chats")
         .delete()
-        .neq("id", 0); // 모든 채팅 삭제
+        .not("id", "is", null); // 모든 채팅 삭제
 
       if (deleteChatsError) {
         throw new Error("채팅 기록 삭제 실패: " + deleteChatsError.message);
