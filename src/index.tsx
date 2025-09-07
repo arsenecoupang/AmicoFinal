@@ -7,6 +7,22 @@ import {ThemeProvider} from "styled-components";
 import { lightTheme } from "./theme";
 import { AuthProvider } from "./AuthContext";
 import { StoreProvider } from "./Store";
+import * as Sentry from "@sentry/react";
+
+// Sentry 초기화 (에러 추적 및 성능 모니터링)
+Sentry.init({
+  dsn: process.env.REACT_APP_SENTRY_DSN, // 환경변수로 설정
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  // 성능 모니터링
+  tracesSampleRate: 1.0,
+  // 세션 리플레이 (10% 샘플링)
+  replaysSessionSampleRate: 0.1,
+  // 에러 발생 시 100% 리플레이
+  replaysOnErrorSampleRate: 1.0,
+});
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

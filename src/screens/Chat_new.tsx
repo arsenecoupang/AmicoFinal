@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { styled } from "styled-components";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { supabase } from "../db";
 
@@ -10,34 +10,21 @@ const ChatScreenDiv = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.base};
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  max-width: 1600px;
-  margin: 0 auto;
-
-  @media (min-width: 1024px) {
-    border-left: 1px solid ${({ theme }) => theme.baseHover};
-    border-right: 1px solid ${({ theme }) => theme.baseHover};
-  }
+  background: #f8fafc;
 `;
 
 // Chat header inspired by Discord/Slack
 const ChatHeader = styled.header`
-  background: ${({ theme }) => theme.base};
-  border-bottom: 1px solid ${({ theme }) => theme.baseHover};
-  padding: clamp(0.75rem, 2vw, 1.25rem);
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 56px;
+  min-height: 64px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
   position: relative;
   z-index: 100;
-
-  @media (min-width: 768px) {
-    min-height: 64px;
-  }
 `;
 
 const HeaderLeft = styled.div`
@@ -56,9 +43,9 @@ const HeaderRight = styled.div`
 
 const RoomTitle = styled.h1`
   margin: 0;
-  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  font-size: 1.125rem;
   font-weight: 600;
-  color: ${({ theme }) => theme.text};
+  color: #1f2937;
 `;
 
 const RoomId = styled.span`
@@ -79,17 +66,17 @@ const MembersList = styled.div`
 `;
 
 const MemberAvatar = styled.div<{ isMe?: boolean }>`
-  width: clamp(32px, 5vw, 36px);
-  height: clamp(32px, 5vw, 36px);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: ${(p) => (p.isMe ? p.theme.main : p.theme.sub)};
+  background: ${(p) => (p.isMe ? "#3b82f6" : "#64748b")};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(0.75rem, 2vw, 0.875rem);
+  font-size: 0.875rem;
   font-weight: 600;
-  color: ${({ theme }) => theme.base};
-  border: 2px solid ${({ theme }) => theme.base};
+  color: #ffffff;
+  border: 2px solid #ffffff;
   position: relative;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -116,13 +103,12 @@ const MemberCount = styled.span`
 
 // Selection banner
 const SelectionBanner = styled.div`
-  background: ${({ theme }) => theme.main};
-  color: ${({ theme }) => theme.base};
-  padding: clamp(0.75rem, 2vw, 1.25rem);
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: #ffffff;
+  padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
-  gap: clamp(0.75rem, 2vw, 1rem);
-  flex-wrap: wrap;
+  gap: 1rem;
 
   .content {
     flex: 1;
@@ -160,10 +146,10 @@ const ChatContent = styled.div`
 const MessagesContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: clamp(0.75rem, 2vw, 1.25rem);
+  padding: 1rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: clamp(0.75rem, 2vw, 1rem);
+  gap: 1rem;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -185,26 +171,22 @@ const MessagesContainer = styled.div`
 `;
 
 // Message group (like Discord)
-const MessageGroup = styled.div<{ isMe?: boolean }>`
+const MessageGroup = styled.div`
   display: flex;
   gap: 0.75rem;
-  flex-direction: ${(props) => (props.isMe ? "row-reverse" : "row")};
-  align-items: flex-end;
 `;
 
 const MessageAvatar = styled.div<{ isMe?: boolean }>`
-  width: clamp(36px, 5vw, 40px);
-  height: clamp(36px, 5vw, 40px);
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: ${(p) => (p.isMe ? p.theme.main : p.theme.sub)};
+  background: ${(p) => (p.isMe ? "#3b82f6" : "#64748b")};
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(0.75rem, 2vw, 0.875rem);
-  font-weight: 500;
-  color: ${({ theme }) => theme.base};
-  border: 2px solid ${({ theme }) => theme.base};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
   flex-shrink: 0;
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -214,25 +196,9 @@ const MessageAvatar = styled.div<{ isMe?: boolean }>`
   }
 `;
 
-const MessageContent = styled.div<{ isMe?: boolean }>`
+const MessageContent = styled.div`
+  flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: ${(props) => (props.isMe ? "flex-end" : "flex-start")};
-`;
-
-const MessageTextsWrapper = styled.div<{ isMe?: boolean }>`
-  max-width: min(100%, 650px);
-  ${(p) =>
-    p.isMe
-      ? `
-    background: ${p.theme.main};
-    color: ${p.theme.base};
-    padding: 0.625rem 1rem;
-    border-radius: 1.25rem;
-    border-bottom-right-radius: 0.25rem;
-  `
-      : ""}
 `;
 
 const MessageHeader = styled.div`
@@ -245,7 +211,7 @@ const MessageHeader = styled.div`
 const MessageUsername = styled.span<{ isMe?: boolean }>`
   font-size: 0.875rem;
   font-weight: 600;
-  color: ${(p) => (p.isMe ? p.theme.main : p.theme.text)};
+  color: ${(p) => (p.isMe ? "#3b82f6" : "#1f2937")};
   cursor: pointer;
 
   &:hover {
@@ -259,39 +225,35 @@ const MessageTimestamp = styled.span`
   font-weight: 400;
 `;
 
-const MessageText = styled.div<{ isMe?: boolean }>`
-  color: ${(p) => (p.isMe ? p.theme.base : p.theme.text)};
-  font-size: clamp(0.875rem, 2.5vw, 0.9375rem);
-  line-height: 1.6;
+const MessageText = styled.div`
+  color: #374151;
+  font-size: 0.875rem;
+  line-height: 1.5;
   word-wrap: break-word;
   white-space: pre-wrap;
-  letter-spacing: -0.2px;
 `;
 
 // Input area
 const InputContainer = styled.div`
-  padding: clamp(0.75rem, 2vw, 1.25rem);
-  background: ${({ theme }) => theme.base};
-  border-top: 1px solid ${({ theme }) => theme.baseHover};
-  position: sticky;
-  bottom: 0;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
 `;
 
 const InputForm = styled.form`
   display: flex;
   align-items: end;
   gap: 0.75rem;
-  background: ${({ theme }) => theme.base};
-  border: 1px solid ${({ theme }) => theme.baseHover};
-  border-radius: 20px;
-  padding: 0.875rem 1rem;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 
   &:focus-within {
-    border-color: ${({ theme }) => theme.main};
-    background: ${({ theme }) => theme.base};
-    box-shadow: 0 0 0 3px ${({ theme }) => `${theme.main}1A`};
+    border-color: #3b82f6;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 `;
 
@@ -330,14 +292,12 @@ const MessageInput = styled.textarea`
 `;
 
 const SendButton = styled.button<{ disabled?: boolean }>`
-  background: ${(p) => (p.disabled ? p.theme.baseHover : p.theme.main)};
-  color: ${({ theme }) => theme.base};
+  background: ${(p) => (p.disabled ? "#e5e7eb" : "#3b82f6")};
+  color: #ffffff;
   border: none;
-  border-radius: 18px;
-  padding: 0.5rem 1.25rem;
-  font-weight: 500;
-  font-size: 0.9375rem;
-  letter-spacing: -0.2px;
+  border-radius: 8px;
+  padding: 0.625rem 1.25rem;
+  font-weight: 600;
   font-size: 0.875rem;
   cursor: ${(p) => (p.disabled ? "not-allowed" : "pointer")};
   transition: all 0.2s ease;
@@ -409,17 +369,22 @@ const EmptyState = styled.div`
   padding: 3rem 1rem;
   text-align: center;
 
+  .emoji {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.6;
+  }
+
   .title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: ${({ theme }) => theme.text};
-    margin-bottom: 0.75rem;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
   }
 
   .subtitle {
     font-size: 0.875rem;
-    color: ${({ theme }) => theme.text};
-    opacity: 0.7;
+    color: #64748b;
     max-width: 280px;
   }
 `;
@@ -429,7 +394,6 @@ type Msg = { id: string; sender: string; text: string; ts: number };
 function ChatScreen() {
   const { user } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
@@ -442,35 +406,11 @@ function ChatScreen() {
   // Initialize room data
   useEffect(() => {
     const state = location.state as any;
-
-    // localStorage에서 퀴즈 결과 확인
-    const storedQuizResult = localStorage.getItem("quizResult");
-
-    if (state?.roomId) {
-      setRoomId(state.roomId);
-      setQuestion(state.question);
-      setSelectedOption(state.selectedOption);
-    } else if (storedQuizResult) {
-      // localStorage에서 정보 복원
-      try {
-        const quizData = JSON.parse(storedQuizResult);
-        setRoomId(quizData.roomId);
-        setQuestion(quizData.question);
-        setSelectedOption(quizData.selectedOption);
-      } catch (e) {
-        console.error("Failed to parse stored quiz result:", e);
-        // 선택지가 없으면 quiz로 리다이렉트
-        navigate("/quiz");
-        return;
-      }
-    } else {
-      // 선택지가 없으면 quiz로 리다이렉트
-      navigate("/quiz");
-      return;
-    }
-
+    if (state?.roomId) setRoomId(state.roomId);
+    if (state?.question) setQuestion(state.question);
+    if (state?.selectedOption) setSelectedOption(state.selectedOption);
     setLoading(false);
-  }, [location.state, navigate]);
+  }, [location.state]);
 
   // Fetch room members
   useEffect(() => {
@@ -767,12 +707,14 @@ function ChatScreen() {
         <MessagesContainer>
           {roomMembers.length === 0 && (
             <EmptyState>
+              <div className="emoji">⏳</div>
               <div className="title">멤버 정보를 불러오는 중...</div>
             </EmptyState>
           )}
 
           {roomMembers.length > 0 && messageGroups.length === 0 && (
             <EmptyState>
+              <div className="emoji">💬</div>
               <div className="title">대화를 시작해보세요!</div>
               <div className="subtitle">
                 첫 번째 메시지를 보내서 대화를 시작해보세요.
@@ -788,9 +730,9 @@ function ChatScreen() {
               : firstMsg.sender.charAt(0).toUpperCase();
 
             return (
-              <MessageGroup key={`group-${groupIndex}`} isMe={isMe}>
+              <MessageGroup key={`group-${groupIndex}`}>
                 <MessageAvatar isMe={isMe}>{initial}</MessageAvatar>
-                <MessageContent isMe={isMe}>
+                <MessageContent>
                   <MessageHeader>
                     <MessageUsername isMe={isMe}>
                       {isMe ? "나" : firstMsg.sender}
@@ -799,13 +741,9 @@ function ChatScreen() {
                       {formatTime(firstMsg.ts)}
                     </MessageTimestamp>
                   </MessageHeader>
-                  <MessageTextsWrapper isMe={isMe}>
-                    {group.map((msg) => (
-                      <MessageText key={msg.id} isMe={isMe}>
-                        {msg.text}
-                      </MessageText>
-                    ))}
-                  </MessageTextsWrapper>
+                  {group.map((msg) => (
+                    <MessageText key={msg.id}>{msg.text}</MessageText>
+                  ))}
                 </MessageContent>
               </MessageGroup>
             );

@@ -125,10 +125,15 @@ const OptionBase = styled.button`
   }
 `;
 
-const OptionA = styled(OptionBase)`
-  background: #fff;
-  color: ${(props) => props.theme.main};
-  border: 2px solid ${(props) => props.theme.main};
+const OptionA = styled(OptionBase).withConfig({
+  shouldForwardProp: (prop) => prop !== "selected",
+})<{ selected?: boolean }>`
+  background: ${(props) => (props.selected ? props.theme.mainHover : "#fff")};
+  color: ${(props) => (props.selected ? "#fff" : props.theme.main)};
+  border: 2px solid
+    ${(props) => (props.selected ? props.theme.mainHover : props.theme.main)};
+  box-shadow: ${(props) =>
+    props.selected ? "0 0 0 3px #A8C68644" : "0 2px 10px rgba(0,0,0,0.06)"};
   &:hover {
     color: ${(props) => props.theme.base};
     background: ${(props) => props.theme.mainHover};
@@ -136,10 +141,15 @@ const OptionA = styled(OptionBase)`
   }
 `;
 
-const OptionB = styled(OptionBase)`
-  background: #fff;
-  color: ${(props) => props.theme.main};
-  border: 2px solid ${(props) => props.theme.main};
+const OptionB = styled(OptionBase).withConfig({
+  shouldForwardProp: (prop) => prop !== "selected",
+})<{ selected?: boolean }>`
+  background: ${(props) => (props.selected ? props.theme.mainHover : "#fff")};
+  color: ${(props) => (props.selected ? "#fff" : props.theme.main)};
+  border: 2px solid
+    ${(props) => (props.selected ? props.theme.mainHover : props.theme.main)};
+  box-shadow: ${(props) =>
+    props.selected ? "0 0 0 3px #A8C68644" : "0 2px 10px rgba(0,0,0,0.06)"};
   &:hover {
     color: ${(props) => props.theme.base};
     background-color: ${(props) => props.theme.mainHover};
@@ -353,8 +363,24 @@ function QuizScreen() {
       console.log("Navigating to chat with roomId:", roomId);
       console.log("Navigate function available:", typeof navigate);
 
+      // localStorage에 선택지 저장
+      const quizResult = {
+        question: quiz.question1,
+        selectedOption: selected,
+        timestamp: Date.now(),
+        roomId: roomId,
+      };
+      localStorage.setItem("quizResult", JSON.stringify(quizResult));
+
       // 채팅방으로 이동
-      navigate("/chat", { state: { roomId, fromQuiz: true } });
+      navigate("/chat", {
+        state: {
+          roomId,
+          fromQuiz: true,
+          question: quiz.question1,
+          selectedOption: selected,
+        },
+      });
 
       console.log("=== NAVIGATION CALLED ===");
     } catch (err: any) {
@@ -387,14 +413,14 @@ function QuizScreen() {
           <OptionA
             aria-label={`선택 ${quiz.option1}`}
             onClick={() => setSelected(quiz.option1)}
-            style={{ opacity: selected === quiz.option1 ? 1 : 0.7 }}
+            selected={selected === quiz.option1}
           >
             {quiz.option1}
           </OptionA>
           <OptionB
             aria-label={`선택 ${quiz.option2}`}
             onClick={() => setSelected(quiz.option2)}
-            style={{ opacity: selected === quiz.option2 ? 1 : 0.7 }}
+            selected={selected === quiz.option2}
           >
             {quiz.option2}
           </OptionB>
