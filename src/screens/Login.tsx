@@ -262,6 +262,8 @@ function Login() {
             ? `${window.location.origin}/auth/callback`
             : `https://amico-school.netlify.app/auth/callback`;
 
+        console.log("[Signup] emailRedirectTo:", redirectUrl, "email:", formData.email);
+
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
