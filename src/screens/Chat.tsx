@@ -782,10 +782,23 @@ function ChatScreen() {
 
           {messageGroups.map((group, groupIndex) => {
             const firstMsg = group[0];
-            const isMe = firstMsg.sender === user?.username;
+            // 더 안전한 사용자 비교
+            const currentUsername = user?.username?.toLowerCase().trim();
+            const senderUsername = firstMsg.sender?.toLowerCase().trim();
+            const isMe = !!(currentUsername && senderUsername && currentUsername === senderUsername);
+            
             const initial = isMe
               ? "나"
               : firstMsg.sender.charAt(0).toUpperCase();
+
+            // 디버깅용 로그
+            console.log('Message debug:', {
+              sender: firstMsg.sender,
+              username: user?.username,
+              currentUsername,
+              senderUsername,
+              isMe: isMe
+            });
 
             return (
               <MessageGroup key={`group-${groupIndex}`} isMe={isMe}>
@@ -793,7 +806,7 @@ function ChatScreen() {
                 <MessageContent isMe={isMe}>
                   <MessageHeader>
                     <MessageUsername isMe={isMe}>
-                      {isMe ? "나" : firstMsg.sender}
+                      {firstMsg.sender}
                     </MessageUsername>
                     <MessageTimestamp>
                       {formatTime(firstMsg.ts)}
@@ -802,6 +815,7 @@ function ChatScreen() {
                   <MessageTextsWrapper isMe={isMe}>
                     {group.map((msg) => (
                       <MessageText key={msg.id} isMe={isMe}>
+                        {!isMe && <strong>{msg.sender}: </strong>}
                         {msg.text}
                       </MessageText>
                     ))}

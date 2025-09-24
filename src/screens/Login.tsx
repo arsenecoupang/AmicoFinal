@@ -257,9 +257,10 @@ function Login() {
         }
 
         // 프로덕션 환경에서는 배포된 도메인 사용
-        const redirectUrl = window.location.hostname === 'localhost' 
-          ? `${window.location.origin}/auth/callback`
-          : `https://amico-school.netlify.app/auth/callback`;
+        const redirectUrl =
+          window.location.hostname === "localhost"
+            ? `${window.location.origin}/auth/callback`
+            : `https://amico-school.netlify.app/auth/callback`;
 
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
