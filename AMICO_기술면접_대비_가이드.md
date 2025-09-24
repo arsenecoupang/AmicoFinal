@@ -41,9 +41,15 @@
 const [user, setUser] = useState<User | null>(() => {
   try {
     const storedUser = localStorage.getItem("authUser");
-    return storedUser ? JSON.parse(storedUser) : null;
+
+    /*
+     * localStorage에 authUser이라는 값(로그인했었던 데이터)가 남아있으면, 이를 storeUser에 가지고 옴
+     * 만약 storeUser가 값을 가지고 오는 데 실패하면 null 반환
+     * storeUser가 값을 가지고 오는 데 성공하면 JSON 형식으로 변환한 다음에 이를 반환
+     */ z;
   } catch {
     return null;
+    //  try에서 에러가 생겼을 경우 catch로 바뀌고, null을 반환
   }
 });
 
@@ -57,7 +63,10 @@ const [loading, setLoading] = useState<boolean>(true);
 useEffect(() => {
   const getSession = async () => {
     const res = await supabase.auth.getSession();
+
+    // supabase에서 값을 받아온 다음 이를 res에 저장(await으로 전부 받아올때까지 기다림)
     const session = res?.data?.session ?? null;
+    // 세션의
 
     if (session && session.user) {
       // Supabase profiles 테이블에서 사용자 정보 가져오기

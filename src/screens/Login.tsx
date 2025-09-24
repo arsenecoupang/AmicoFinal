@@ -256,11 +256,16 @@ function Login() {
           );
         }
 
+        // 프로덕션 환경에서는 배포된 도메인 사용
+        const redirectUrl = window.location.hostname === 'localhost' 
+          ? `${window.location.origin}/auth/callback`
+          : `https://amico-school.netlify.app/auth/callback`;
+
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: redirectUrl,
             data: {
               username: formData.username,
               realname: formData.realname,
@@ -381,21 +386,21 @@ function Login() {
                   반을 선택해주세요.
                 </HelperText>
               )}
+              <HelperText>사용자 아이디</HelperText>
+              <LoginInput
+                type="text"
+                name="username"
+                placeholder="사용자 아이디를 입력하세요"
+                value={formData.username}
+                onChange={handleInputChange}
+                error={errors.username}
+              />
+              {errors.username && (
+                <HelperText style={{ color: "#e74c3c" }}>
+                  사용자 아이디를 입력하세요.
+                </HelperText>
+              )}
             </>
-          )}
-          <HelperText>별명</HelperText>
-          <LoginInput
-            type="text"
-            name="username"
-            placeholder="별명을 입력하세요"
-            value={formData.username}
-            onChange={handleInputChange}
-            error={errors.username}
-          />
-          {errors.username && (
-            <HelperText style={{ color: "#e74c3c" }}>
-              아이디를 입력하세요.
-            </HelperText>
           )}
           <HelperText>비밀번호</HelperText>
           <LoginInput

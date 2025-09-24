@@ -1,3 +1,4 @@
+// * MVP 투표 시스템 - 채팅방 참여자들이 서로를 평가하는 핵심 기능
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../db";
@@ -5,6 +6,7 @@ import styled from "styled-components";
 import { useAuth } from "../AuthContext";
 import { v4 as uuidv4 } from "uuid";
 
+// * 스타일드 컴포넌트 정의
 const Container = styled.div`
   padding: 2rem 1rem;
   max-width: 900px;
@@ -131,6 +133,7 @@ const ProgressFill = styled.div<{ pct: number }>`
   transition: width 0.4s ease;
 `;
 
+// * 타입 정의
 interface Room {
   id: string;
   members: string[] | string;
@@ -144,6 +147,7 @@ interface Profile {
 }
 
 function MvpVote() {
+  // * 상태 관리 - 사용자 인증, 후보자 데이터, 투표 상태 등
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -158,6 +162,7 @@ function MvpVote() {
   const [alreadyVoted, setAlreadyVoted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // * 데이터 로드 함수 - 사용자 권한, 참여 방, 후보자, 투표 현황 조회
   const fetchVoteData = useCallback(async () => {
     if (!user) return;
 
@@ -165,8 +170,8 @@ function MvpVote() {
     setError(null);
 
     try {
-      // 관리자 권한 확인 (사용자의 email이나 특정 조건으로 판단)
-      // 예: 특정 이메일이나 username으로 관리자 구분
+      // ? 관리자 권한 확인 (사용자의 email이나 특정 조건으로 판단)
+      // ? 예: 특정 이메일이나 username으로 관리자 구분
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("username, email")
@@ -264,6 +269,7 @@ function MvpVote() {
     }
   }, [user]);
 
+  // ! useEffect - 인증 상태 변화 감지 및 데이터 로드
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/login");
@@ -272,6 +278,7 @@ function MvpVote() {
     }
   }, [user, authLoading, navigate, fetchVoteData]);
 
+  // * 투표 제출 함수 - 새로운 투표 기록 생성 및 저장
   const handleVoteSubmit = async () => {
     if (
       !user ||
@@ -283,7 +290,7 @@ function MvpVote() {
 
     setIsLoading(true);
     try {
-      // 새 투표 기록 (기존 투표 삭제 없이)
+      // ? 새 투표 기록 (기존 투표 삭제 없이)
       const newVotes = userRoomIds.map((roomId) => ({
         id: uuidv4(),
         room_id: roomId,
@@ -310,11 +317,12 @@ function MvpVote() {
     }
   };
 
+  // ! 관리자 전용 - 다음 사이클 시작 (모든 데이터 초기화)
   const handleNextCycle = async () => {
     try {
       setIsLoading(true);
 
-      // 1. 모든 투표 기록 삭제
+      // todo 1. 모든 투표 기록 삭제
       const { error: deleteVotesError } = await supabase
         .from("votes")
         .delete()
@@ -324,7 +332,7 @@ function MvpVote() {
         throw new Error("투표 기록 삭제 실패: " + deleteVotesError.message);
       }
 
-      // 2. 모든 채팅 메시지 삭제
+      // todo 2. 모든 채팅 메시지 삭제
       const { error: deleteChatsError } = await supabase
         .from("chats")
         .delete()
@@ -334,7 +342,7 @@ function MvpVote() {
         throw new Error("채팅 기록 삭제 실패: " + deleteChatsError.message);
       }
 
-      // 3. 모든 채팅방 삭제 (선택사항 - 방을 유지하고 싶다면 주석 처리)
+      // todo 3. 모든 채팅방 삭제 (선택사항 - 방을 유지하고 싶다면 주석 처리)
       const { error: deleteRoomsError } = await supabase
         .from("chat_rooms")
         .delete()
@@ -356,6 +364,7 @@ function MvpVote() {
     }
   };
 
+  // * MVP 확정 함수 - 투표 집계 후 최종 우승자 결정
   const handleFinalize = async () => {
     if (userRoomIds.length === 0) return;
 
@@ -434,14 +443,16 @@ function MvpVote() {
     }
   };
 
+  // * 로딩 상태 렌더링
   if (authLoading || isLoading) {
     return (
       <Container>
-        <Card>로딩 중...</Card>
+        <Card>투표 정보를 불러오는 중...</Card>
       </Container>
     );
   }
 
+  // ! 에러 상태 렌더링
   if (error) {
     return (
       <Container>
@@ -450,6 +461,7 @@ function MvpVote() {
     );
   }
 
+  // * 메인 투표 인터페이스 렌더링
   return (
     <Container>
       <h2>
@@ -475,6 +487,7 @@ function MvpVote() {
             ? "이미 투표를 완료했습니다. 투표는 변경할 수 없습니다."
             : "가장 즐거운 시간을 만들어준 멤버에게 투표하세요."}
         </p>
+        {/* * 후보자 카드 목록 - 진행률과 투표 선택 인터페이스 */}
         <Grid>
           {candidates.map((c) => {
             const totalVotes = Object.values(voteCounts).reduce(
@@ -512,6 +525,7 @@ function MvpVote() {
             );
           })}
         </Grid>
+        {/* * 액션 버튼들 - 투표 제출 및 관리자 기능 */}
         <Actions style={{ marginTop: "1rem" }}>
           <Btn
             onClick={handleVoteSubmit}
@@ -520,7 +534,7 @@ function MvpVote() {
             {alreadyVoted ? "투표 완료" : "투표 제출"}
           </Btn>
 
-          {/* 관리자 전용 버튼들 */}
+          {/* ! 관리자 전용 버튼들 */}
           {isAdmin && (
             <>
               <Btn

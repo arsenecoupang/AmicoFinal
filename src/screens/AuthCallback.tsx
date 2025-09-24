@@ -274,11 +274,16 @@ const AuthCallback: React.FC = () => {
       setStatus("loading");
       setMessage("새로운 인증 이메일을 발송하는 중...");
 
+      // 프로덕션 환경에서는 배포된 도메인 사용
+      const redirectUrl = window.location.hostname === 'localhost' 
+        ? `${window.location.origin}/auth/callback`
+        : `https://amico-school.netlify.app/auth/callback`;
+
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: savedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: redirectUrl,
         },
       });
 
