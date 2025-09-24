@@ -681,7 +681,7 @@ function ChatScreen() {
       const prevMsg = messages[index - 1];
       const timeDiff = prevMsg ? msg.ts - prevMsg.ts : 0;
       const shouldGroup =
-        prevMsg && prevMsg.sender === msg.sender && timeDiff < 5 * 60 * 1000; // Group if within 5 minutes
+        prevMsg && prevMsg.sender === msg.sender && timeDiff < 2 * 60 * 1000; // Group if within 2 minutes (reduced from 5)
 
       if (shouldGroup) {
         currentGroup.push(msg);
