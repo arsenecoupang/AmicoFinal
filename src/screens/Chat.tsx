@@ -223,34 +223,50 @@ const MessageContent = styled.div<{ isMe?: boolean }>`
 
 const MessageTextsWrapper = styled.div<{ isMe?: boolean }>`
   max-width: min(100%, 650px);
-  ${(p) =>
-    p.isMe
-      ? `
-    background: ${p.theme.main};
-    color: ${p.theme.base};
-    padding: 0.625rem 1rem;
-    border-radius: 1.25rem;
-    border-bottom-right-radius: 0.25rem;
-  `
-      : ""}
+  position: relative;
+  margin-bottom: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: ${(p) => (p.isMe ? "flex-end" : "flex-start")};
+
+  background: ${(p) => (p.isMe ? p.theme.main : "#f3f4f6")};
+  color: ${(p) => (p.isMe ? p.theme.base : p.theme.text)};
+  padding: 0.7rem 1.1rem;
+  border-radius: 1.25rem;
+  border-bottom-right-radius: ${(p) => (p.isMe ? "0.3rem" : "1.25rem")};
+  border-bottom-left-radius: ${(p) => (p.isMe ? "1.25rem" : "0.3rem")};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  margin-left: ${(p) => (p.isMe ? "auto" : "0")};
+  margin-right: ${(p) => (p.isMe ? "0" : "auto")};
+
+  &::after {
+    content: "";
+    position: absolute;
+    ${(p) =>
+      p.isMe
+        ? `right: -10px; border-left: 12px solid ${p.theme.main};`
+        : `left: -10px; border-right: 12px solid #f3f4f6;`}
+    top: 18px;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    ${(p) => (p.isMe ? "border-right: none;" : "border-left: none;")}
+  }
 `;
 
 const MessageHeader = styled.div`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.1rem;
+  padding-left: 2px;
 `;
 
 const MessageUsername = styled.span<{ isMe?: boolean }>`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: ${(p) => (p.isMe ? p.theme.main : p.theme.text)};
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: ${(p) => (p.isMe ? p.theme.main : "#4b5563")};
+  opacity: 0.85;
+  margin-right: 0.3rem;
 `;
 
 const MessageTimestamp = styled.span`
@@ -261,11 +277,12 @@ const MessageTimestamp = styled.span`
 
 const MessageText = styled.div<{ isMe?: boolean }>`
   color: ${(p) => (p.isMe ? p.theme.base : p.theme.text)};
-  font-size: clamp(0.875rem, 2.5vw, 0.9375rem);
-  line-height: 1.6;
-  word-wrap: break-word;
+  font-size: 1.02rem;
+  line-height: 1.7;
+  word-break: break-word;
   white-space: pre-wrap;
   letter-spacing: -0.2px;
+  padding: 0;
 `;
 
 // Input area
@@ -782,31 +799,23 @@ function ChatScreen() {
 
           {messageGroups.map((group, groupIndex) => {
             const firstMsg = group[0];
-            // 더 안전한 사용자 비교
             const currentUsername = user?.username?.toLowerCase().trim();
             const senderUsername = firstMsg.sender?.toLowerCase().trim();
-            const isMe = !!(currentUsername && senderUsername && currentUsername === senderUsername);
-            
+            const isMe = !!(
+              currentUsername &&
+              senderUsername &&
+              currentUsername === senderUsername
+            );
             const initial = isMe
               ? "나"
               : firstMsg.sender.charAt(0).toUpperCase();
-
-            // 디버깅용 로그
-            console.log('Message debug:', {
-              sender: firstMsg.sender,
-              username: user?.username,
-              currentUsername,
-              senderUsername,
-              isMe: isMe
-            });
-
             return (
               <MessageGroup key={`group-${groupIndex}`} isMe={isMe}>
                 <MessageAvatar isMe={isMe}>{initial}</MessageAvatar>
                 <MessageContent isMe={isMe}>
                   <MessageHeader>
                     <MessageUsername isMe={isMe}>
-                      {firstMsg.sender}
+                      {isMe ? user?.username || "나" : firstMsg.sender}
                     </MessageUsername>
                     <MessageTimestamp>
                       {formatTime(firstMsg.ts)}
@@ -815,7 +824,6 @@ function ChatScreen() {
                   <MessageTextsWrapper isMe={isMe}>
                     {group.map((msg) => (
                       <MessageText key={msg.id} isMe={isMe}>
-                        {!isMe && <strong>{msg.sender}: </strong>}
                         {msg.text}
                       </MessageText>
                     ))}
