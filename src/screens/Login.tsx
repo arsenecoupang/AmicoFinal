@@ -304,10 +304,36 @@ function Login() {
           throw new Error("사용자 정보를 받아오지 못했습니다.");
         }
 
-        console.log("User created successfully, creating profile...");
-        console.log("User ID for profile:", data.user.id);
+        console.log("User created successfully, attempting login first...");
+
+        // 먼저 로그인하여 세션 확보
+        const { data: signInData, error: signInError } =
+          await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
+
+        console.log("Sign in after signup:", {
+          hasSession: !!signInData?.session,
+          hasUser: !!signInData?.user,
+          error: signInError?.message,
+        });
+
+        if (signInError) {
+          console.error("Sign in after signup failed:", signInError);
+          throw new Error(`로그인 실패: ${signInError.message}`);
+        }
+
+        if (!signInData?.session || !signInData?.user) {
+          throw new Error(
+            "로그인 세션을 생성할 수 없습니다. Supabase 설정을 확인해주세요."
+          );
+        }
+
+        console.log("Login successful, now creating profile...");
+        console.log("User ID for profile:", signInData.user.id);
         console.log("Profile data to insert:", {
-          id: data.user.id,
+          id: signInData.user.id,
           email: formData.email,
           username: formData.username,
           realname: formData.realname,
@@ -315,12 +341,12 @@ function Login() {
           temperature: 0,
         });
 
-        // 프로필 생성 시도 - 더 상세한 로깅
+        // 로그인 후 프로필 생성 (인증된 상태에서)
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .insert([
             {
-              id: data.user.id,
+              id: signInData.user.id,
               email: formData.email,
               username: formData.username,
               realname: formData.realname,
@@ -354,33 +380,7 @@ function Login() {
           console.log("Profile created successfully:", profileData);
         }
 
-        console.log("Attempting to sign in after signup...");
-
-        // 회원가입 후 바로 로그인 시도
-        const { data: signInData, error: signInError } =
-          await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
-
-        console.log("Sign in after signup:", {
-          hasSession: !!signInData?.session,
-          hasUser: !!signInData?.user,
-          error: signInError?.message,
-        });
-
-        if (signInError) {
-          console.error("Sign in after signup failed:", signInError);
-          throw new Error(`로그인 실패: ${signInError.message}`);
-        }
-
-        if (!signInData?.session || !signInData?.user) {
-          throw new Error(
-            "로그인 세션을 생성할 수 없습니다. Supabase 설정을 확인해주세요."
-          );
-        }
-
-        // 성공적으로 로그인
+        // AuthContext에 로그인 상태 설정
         login({
           id: signInData.user.id,
           username: formData.username,
