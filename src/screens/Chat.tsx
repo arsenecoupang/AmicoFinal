@@ -690,31 +690,9 @@ function ChatScreen() {
   };
 
   // Group consecutive messages by sender
+  // 메시지 그룹핑을 제거하여, 전송할 때마다 항상 새로운 말풍선이 생성되도록 변경
   const groupMessages = (messages: Msg[]) => {
-    const groups: Msg[][] = [];
-    let currentGroup: Msg[] = [];
-
-    messages.forEach((msg, index) => {
-      const prevMsg = messages[index - 1];
-      const timeDiff = prevMsg ? msg.ts - prevMsg.ts : 0;
-      const shouldGroup =
-        prevMsg && prevMsg.sender === msg.sender && timeDiff < 2 * 60 * 1000; // Group if within 2 minutes (reduced from 5)
-
-      if (shouldGroup) {
-        currentGroup.push(msg);
-      } else {
-        if (currentGroup.length > 0) {
-          groups.push(currentGroup);
-        }
-        currentGroup = [msg];
-      }
-    });
-
-    if (currentGroup.length > 0) {
-      groups.push(currentGroup);
-    }
-
-    return groups;
+    return messages.map((msg) => [msg]);
   };
 
   const formatTime = (timestamp: number) => {
