@@ -256,7 +256,9 @@ function Login() {
           );
         }
 
-        // 프로덕션 환경에서는 배포된 도메인 사용
+        console.log("Starting signup process...");
+
+        // 회원가입 시도
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -270,83 +272,88 @@ function Login() {
         });
 
         console.log("Signup response:", {
-          data: !!data,
-          error: error?.message,
-          user: !!data?.user,
-          session: !!data?.session,
-          userConfirmed: data?.user?.email_confirmed_at,
+          hasData: !!data,
+          hasUser: !!data?.user,
+          hasSession: !!data?.session,
+          userId: data?.user?.id,
+          errorMessage: error?.message,
+          errorCode: error?.status,
         });
 
-        if (error) throw error;
-
-        if (!data.user) {
-          throw new Error("회원가입에 실패했습니다.");
+        if (error) {
+          console.error("Signup error:", error);
+          throw new Error(`회원가입 실패: ${error.message}`);
         }
 
-        // 이메일 인증이 필요한 경우 (Supabase 설정에서 이메일 인증이 켜져 있는 경우)
-        if (!data.session && !data.user.email_confirmed_at) {
-          setErrorMsg(
-            "회원가입이 완료되었지만 이메일 인증이 필요합니다.\n" +
-            "Supabase 설정에서 'Enable email confirmations'를 비활성화하거나,\n" +
-            "이메일 인증을 완료해주세요."
-          );
-          return;
+        if (!data?.user) {
+          throw new Error("사용자 정보를 받아오지 못했습니다.");
         }
 
-        // 프로필 생성
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .insert([
-            {
-              id: data.user.id,
-              email: formData.email,
-              username: formData.username,
-              realname: formData.realname,
-              class: formData.class,
-              temperature: 0,
-            },
-          ])
-          .select()
-          .single();
+        console.log("User created successfully, creating profile...");
 
-        console.log("Profile insert result:", { profileData, profileError });
+        // 프로필 생성 시도
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from("profiles")
+            .insert([
+              {
+                id: data.user.id,
+                email: formData.email,
+                username: formData.username,
+                realname: formData.realname,
+                class: formData.class,
+                temperature: 0,
+              },
+            ])
+            .select()
+            .single();
 
-        if (profileError && profileError.code !== "23505") {
-          // 23505는 unique constraint violation (이미 존재하는 프로필)
-          console.error("Profile creation failed:", profileError);
-          throw new Error(`프로필 생성 실패: ${profileError.message}`);
-        }
-
-        // 세션이 있으면 바로 로그인, 없으면 세션 생성 시도
-        if (data.session) {
-          login({
-            id: data.user.id,
-            username: formData.username,
-            email: formData.email,
-          });
-          navigate("/home");
-        } else {
-          // 세션이 없는 경우 로그인 시도
-          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
+          console.log("Profile creation result:", {
+            success: !!profileData,
+            error: profileError?.message,
+            code: profileError?.code,
           });
 
-          if (loginError) {
-            throw new Error(`로그인 실패: ${loginError.message}`);
+          // 프로필 생성 실패해도 계속 진행 (이미 존재할 수 있음)
+          if (profileError && profileError.code !== "23505") {
+            console.warn("Profile creation failed but continuing:", profileError);
           }
-
-          if (loginData.session && loginData.user) {
-            login({
-              id: loginData.user.id,
-              username: formData.username,
-              email: formData.email,
-            });
-            navigate("/home");
-          } else {
-            throw new Error("세션 생성에 실패했습니다.");
-          }
+        } catch (profileErr) {
+          console.warn("Profile creation error but continuing:", profileErr);
         }
+
+        console.log("Attempting to sign in after signup...");
+
+        // 회원가입 후 바로 로그인 시도
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        console.log("Sign in after signup:", {
+          hasSession: !!signInData?.session,
+          hasUser: !!signInData?.user,
+          error: signInError?.message,
+        });
+
+        if (signInError) {
+          console.error("Sign in after signup failed:", signInError);
+          throw new Error(`로그인 실패: ${signInError.message}`);
+        }
+
+        if (!signInData?.session || !signInData?.user) {
+          throw new Error("로그인 세션을 생성할 수 없습니다. Supabase 설정을 확인해주세요.");
+        }
+
+        // 성공적으로 로그인
+        login({
+          id: signInData.user.id,
+          username: formData.username,
+          email: formData.email,
+        });
+
+        console.log("Signup and login completed successfully");
+        navigate("/home");
       }
     } catch (err: any) {
       console.error("Auth error:", err);
