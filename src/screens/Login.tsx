@@ -257,7 +257,7 @@ function Login() {
         }
 
         console.log("Starting signup process...");
-        
+
         // Supabase 연결 테스트
         try {
           const { data: testData, error: testError } = await supabase
@@ -265,9 +265,12 @@ function Login() {
             .select("id")
             .limit(1);
           console.log("Supabase connection test:", { testData, testError });
-          
+
           if (testError) {
-            console.error("Supabase connection or table access failed:", testError);
+            console.error(
+              "Supabase connection or table access failed:",
+              testError
+            );
           }
         } catch (testErr) {
           console.error("Supabase test failed:", testErr);
@@ -371,7 +374,9 @@ function Login() {
             console.log("Profile already exists, continuing...");
           } else if (profileError.code === "42501") {
             console.error("Permission denied - check RLS policies!");
-            throw new Error("프로필 생성 권한이 없습니다. 관리자에게 문의하세요.");
+            throw new Error(
+              "프로필 생성 권한이 없습니다. 관리자에게 문의하세요."
+            );
           } else {
             console.error("Profile creation failed:", profileError);
             throw new Error(`프로필 생성 실패: ${profileError.message}`);
