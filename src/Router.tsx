@@ -6,7 +6,6 @@ import NotFound from "./screens/NotFound";
 import QuizScreen from "./screens/Quiz";
 import ChatScreen from "./screens/Chat";
 import MvpVoteScreen from "./screens/MvpVote";
-import AuthCallback from "./screens/AuthCallback";
 import DbTest from "./debug/DbTest";
 import DebugRealtime from "./screens/DebugRealtime";
 import DebugDatabase from "./screens/DebugDatabase";
@@ -26,10 +25,6 @@ const router = createBrowserRouter([
       {
         path: "/chat",
         element: <ChatScreen />,
-      },
-      {
-        path: "/auth/callback",
-        element: <AuthCallback />,
       },
       {
         path: "/debug/db",

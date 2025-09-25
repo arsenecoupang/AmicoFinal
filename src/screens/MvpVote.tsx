@@ -232,8 +232,8 @@ function MvpVote() {
       if (profilesError) throw profilesError;
       setCandidates(profiles || []);
 
-      // 4. 현재 투표 현황 집계
       const { data: votes, error: votesError } = await supabase
+        // 4. 현재 투표 현황 집계
         .from("votes")
         .select("candidate_id")
         .in("room_id", roomIds);

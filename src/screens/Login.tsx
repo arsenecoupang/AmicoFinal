@@ -257,23 +257,10 @@ function Login() {
         }
 
         // 프로덕션 환경에서는 배포된 도메인 사용
-        const redirectUrl =
-          window.location.hostname === "localhost"
-            ? `${window.location.origin}/auth/callback`
-            : `https://amico-school.netlify.app/auth/callback`;
-
-        console.log(
-          "[Signup] emailRedirectTo:",
-          redirectUrl,
-          "email:",
-          formData.email
-        );
-
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: redirectUrl,
             data: {
               username: formData.username,
               realname: formData.realname,
@@ -294,19 +281,7 @@ function Login() {
           throw new Error("회원가입에 실패했습니다.");
         }
 
-        // 이메일 인증이 필요한 경우
-        if (!data.user.email_confirmed_at && !data.session) {
-          // 이메일을 localStorage에 저장하여 나중에 재발송할 수 있도록 함
-          localStorage.setItem("pending_email", formData.email);
-
-          setErrorMsg(
-            " 이메일 인증 링크가 발송되었습니다\n\n 링크는 5분간 유효합니다.  \n\n 링크가 만료되었다면 다시 회원가입을 시도해주세요."
-          );
-          setIsLogin(true); // 로그인 폼으로 전환
-          return;
-        }
-
-        // 즉시 인증된 경우 (이메일 인증이 비활성화된 경우)
+        // 프로필 생성
         const profileInsert = await supabase.from("profiles").insert([
           {
             id: data.user.id,
@@ -320,6 +295,7 @@ function Login() {
 
         console.log("Profile insert result:", profileInsert);
 
+        // 바로 로그인 처리
         login({
           id: data.user.id,
           username: formData.username,
