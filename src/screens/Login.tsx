@@ -272,7 +272,9 @@ function Login() {
         console.log("Signup response:", {
           data: !!data,
           error: error?.message,
-          user: data?.user,
+          user: !!data?.user,
+          session: !!data?.session,
+          userConfirmed: data?.user?.email_confirmed_at,
         });
 
         if (error) throw error;
@@ -281,27 +283,70 @@ function Login() {
           throw new Error("회원가입에 실패했습니다.");
         }
 
+        // 이메일 인증이 필요한 경우 (Supabase 설정에서 이메일 인증이 켜져 있는 경우)
+        if (!data.session && !data.user.email_confirmed_at) {
+          setErrorMsg(
+            "회원가입이 완료되었지만 이메일 인증이 필요합니다.\n" +
+            "Supabase 설정에서 'Enable email confirmations'를 비활성화하거나,\n" +
+            "이메일 인증을 완료해주세요."
+          );
+          return;
+        }
+
         // 프로필 생성
-        const profileInsert = await supabase.from("profiles").insert([
-          {
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: data.user.id,
+              email: formData.email,
+              username: formData.username,
+              realname: formData.realname,
+              class: formData.class,
+              temperature: 0,
+            },
+          ])
+          .select()
+          .single();
+
+        console.log("Profile insert result:", { profileData, profileError });
+
+        if (profileError && profileError.code !== "23505") {
+          // 23505는 unique constraint violation (이미 존재하는 프로필)
+          console.error("Profile creation failed:", profileError);
+          throw new Error(`프로필 생성 실패: ${profileError.message}`);
+        }
+
+        // 세션이 있으면 바로 로그인, 없으면 세션 생성 시도
+        if (data.session) {
+          login({
             id: data.user.id,
-            email: formData.email,
             username: formData.username,
-            realname: formData.realname,
-            class: formData.class,
-            temperature: 0,
-          },
-        ]);
+            email: formData.email,
+          });
+          navigate("/home");
+        } else {
+          // 세션이 없는 경우 로그인 시도
+          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
 
-        console.log("Profile insert result:", profileInsert);
+          if (loginError) {
+            throw new Error(`로그인 실패: ${loginError.message}`);
+          }
 
-        // 바로 로그인 처리
-        login({
-          id: data.user.id,
-          username: formData.username,
-          email: formData.email,
-        });
-        navigate("/home");
+          if (loginData.session && loginData.user) {
+            login({
+              id: loginData.user.id,
+              username: formData.username,
+              email: formData.email,
+            });
+            navigate("/home");
+          } else {
+            throw new Error("세션 생성에 실패했습니다.");
+          }
+        }
       }
     } catch (err: any) {
       console.error("Auth error:", err);
