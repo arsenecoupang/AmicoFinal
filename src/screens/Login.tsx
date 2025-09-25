@@ -257,6 +257,21 @@ function Login() {
         }
 
         console.log("Starting signup process...");
+        
+        // Supabase 연결 테스트
+        try {
+          const { data: testData, error: testError } = await supabase
+            .from("profiles")
+            .select("id")
+            .limit(1);
+          console.log("Supabase connection test:", { testData, testError });
+          
+          if (testError) {
+            console.error("Supabase connection or table access failed:", testError);
+          }
+        } catch (testErr) {
+          console.error("Supabase test failed:", testErr);
+        }
 
         // 회원가입 시도
         const { data, error } = await supabase.auth.signUp({
@@ -290,45 +305,63 @@ function Login() {
         }
 
         console.log("User created successfully, creating profile...");
+        console.log("User ID for profile:", data.user.id);
+        console.log("Profile data to insert:", {
+          id: data.user.id,
+          email: formData.email,
+          username: formData.username,
+          realname: formData.realname,
+          class: formData.class,
+          temperature: 0,
+        });
 
-        // 프로필 생성 시도
-        try {
-          const { data: profileData, error: profileError } = await supabase
-            .from("profiles")
-            .insert([
-              {
-                id: data.user.id,
-                email: formData.email,
-                username: formData.username,
-                realname: formData.realname,
-                class: formData.class,
-                temperature: 0,
-              },
-            ])
-            .select()
-            .single();
+        // 프로필 생성 시도 - 더 상세한 로깅
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: data.user.id,
+              email: formData.email,
+              username: formData.username,
+              realname: formData.realname,
+              class: formData.class,
+              temperature: 0,
+            },
+          ])
+          .select()
+          .single();
 
-          console.log("Profile creation result:", {
-            success: !!profileData,
-            error: profileError?.message,
-            code: profileError?.code,
-          });
+        console.log("Profile creation detailed result:", {
+          profileData,
+          profileError,
+          errorMessage: profileError?.message,
+          errorCode: profileError?.code,
+          errorDetails: profileError?.details,
+          hint: profileError?.hint,
+        });
 
-          // 프로필 생성 실패해도 계속 진행 (이미 존재할 수 있음)
-          if (profileError && profileError.code !== "23505") {
-            console.warn("Profile creation failed but continuing:", profileError);
+        if (profileError) {
+          if (profileError.code === "23505") {
+            console.log("Profile already exists, continuing...");
+          } else if (profileError.code === "42501") {
+            console.error("Permission denied - check RLS policies!");
+            throw new Error("프로필 생성 권한이 없습니다. 관리자에게 문의하세요.");
+          } else {
+            console.error("Profile creation failed:", profileError);
+            throw new Error(`프로필 생성 실패: ${profileError.message}`);
           }
-        } catch (profileErr) {
-          console.warn("Profile creation error but continuing:", profileErr);
+        } else {
+          console.log("Profile created successfully:", profileData);
         }
 
         console.log("Attempting to sign in after signup...");
 
         // 회원가입 후 바로 로그인 시도
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
+        const { data: signInData, error: signInError } =
+          await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          });
 
         console.log("Sign in after signup:", {
           hasSession: !!signInData?.session,
@@ -342,7 +375,9 @@ function Login() {
         }
 
         if (!signInData?.session || !signInData?.user) {
-          throw new Error("로그인 세션을 생성할 수 없습니다. Supabase 설정을 확인해주세요.");
+          throw new Error(
+            "로그인 세션을 생성할 수 없습니다. Supabase 설정을 확인해주세요."
+          );
         }
 
         // 성공적으로 로그인
