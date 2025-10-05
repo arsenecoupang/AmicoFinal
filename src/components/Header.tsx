@@ -7,9 +7,11 @@ import { useState, useRef, useEffect } from "react";
 const HeaderContainer = styled.header`
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 1rem;
+
   padding: 0 2vw;
+  height: 80px;
   width: 100%;
   box-sizing: border-box;
 `;
@@ -18,6 +20,9 @@ const Logo = styled.div`
   font-size: 1.8rem;
   height: 5rem;
   font-weight: 900;
+  position: absolute;
+  top: 0;
+  left: 0;
   color: ${(props) => props.theme.accent};
   display: flex;
   align-items: center;
@@ -28,7 +33,7 @@ const Logo = styled.div`
 const LogoImg = styled.img`
   height: 5rem;
   max-width: 100%;
-  @media (max-width: 48rem) {
+  @media (max-width: 1000px) {
     height: 3rem;
   }
 `;
@@ -49,6 +54,9 @@ const NavUl = styled.ul`
   padding: 0;
   align-items: center;
   justify-content: center;
+  @media (max-width: 370px) {
+    gap: 0px;
+  }
 `;
 
 const NavLi = styled.li<{ isActive?: boolean }>`
