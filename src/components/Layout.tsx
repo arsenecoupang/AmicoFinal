@@ -1,6 +1,6 @@
-import React from "react";
-import Header from "./Header";
+import type React from "react";
 import styled from "styled-components";
+import Header from "./Header";
 
 const MainContent = styled.main`
   width: 100vw;
@@ -12,14 +12,13 @@ const MainContent = styled.main`
 `;
 
 function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <Header />
-      <MainContent>{children}</MainContent>
-      {/* Footer 추가 가능 */}
-    </>
-  );
+	return (
+		<>
+			<Header />
+			<MainContent>{children}</MainContent>
+			{/* Footer 추가 가능 */}
+		</>
+	);
 }
 
 export default Layout;
-

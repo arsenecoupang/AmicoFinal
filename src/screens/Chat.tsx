@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { styled } from "styled-components";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { styled } from "styled-components";
 import { useAuth } from "../AuthContext";
 import { supabase } from "../db";
 
@@ -243,9 +244,9 @@ const MessageTextsWrapper = styled.div<{ isMe?: boolean }>`
     content: "";
     position: absolute;
     ${(p) =>
-      p.isMe
-        ? `right: -10px; border-left: 12px solid ${p.theme.main};`
-        : `left: -10px; border-right: 12px solid #f3f4f6;`}
+			p.isMe
+				? `right: -10px; border-left: 12px solid ${p.theme.main};`
+				: `left: -10px; border-right: 12px solid #f3f4f6;`}
     top: 18px;
     border-top: 10px solid transparent;
     border-bottom: 10px solid transparent;
@@ -444,392 +445,392 @@ const EmptyState = styled.div`
 type Msg = { id: string; sender: string; text: string; ts: number };
 
 function ChatScreen() {
-  const { user } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [text, setText] = useState("");
-  const endRef = useRef<HTMLDivElement | null>(null);
-  const [roomId, setRoomId] = useState<string | null>(null);
-  const [roomMembers, setRoomMembers] = useState<string[]>([]);
-  const [question, setQuestion] = useState<string | null>(null);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+	const { user } = useAuth();
+	const location = useLocation();
+	const navigate = useNavigate();
+	const [loading, setLoading] = useState(true);
+	const [msgs, setMsgs] = useState<Msg[]>([]);
+	const [text, setText] = useState("");
+	const endRef = useRef<HTMLDivElement | null>(null);
+	const [roomId, setRoomId] = useState<string | null>(null);
+	const [roomMembers, setRoomMembers] = useState<string[]>([]);
+	const [question, setQuestion] = useState<string | null>(null);
+	const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  // Initialize room data
-  useEffect(() => {
-    const state = location.state as any;
+	// Initialize room data
+	useEffect(() => {
+		const state = location.state as any;
 
-    // localStorage에서 퀴즈 결과 확인
-    const storedQuizResult = localStorage.getItem("quizResult");
+		// localStorage에서 퀴즈 결과 확인
+		const storedQuizResult = localStorage.getItem("quizResult");
 
-    if (state?.roomId) {
-      setRoomId(state.roomId);
-      setQuestion(state.question);
-      setSelectedOption(state.selectedOption);
-    } else if (storedQuizResult) {
-      // localStorage에서 정보 복원
-      try {
-        const quizData = JSON.parse(storedQuizResult);
-        setRoomId(quizData.roomId);
-        setQuestion(quizData.question);
-        setSelectedOption(quizData.selectedOption);
-      } catch (e) {
-        console.error("Failed to parse stored quiz result:", e);
-        // 선택지가 없으면 quiz로 리다이렉트
-        navigate("/quiz");
-        return;
-      }
-    } else {
-      // 선택지가 없으면 quiz로 리다이렉트
-      navigate("/quiz");
-      return;
-    }
+		if (state?.roomId) {
+			setRoomId(state.roomId);
+			setQuestion(state.question);
+			setSelectedOption(state.selectedOption);
+		} else if (storedQuizResult) {
+			// localStorage에서 정보 복원
+			try {
+				const quizData = JSON.parse(storedQuizResult);
+				setRoomId(quizData.roomId);
+				setQuestion(quizData.question);
+				setSelectedOption(quizData.selectedOption);
+			} catch (e) {
+				console.error("Failed to parse stored quiz result:", e);
+				// 선택지가 없으면 quiz로 리다이렉트
+				navigate("/quiz");
+				return;
+			}
+		} else {
+			// 선택지가 없으면 quiz로 리다이렉트
+			navigate("/quiz");
+			return;
+		}
 
-    setLoading(false);
-  }, [location.state, navigate]);
+		setLoading(false);
+	}, [location.state, navigate]);
 
-  // Fetch room members
-  useEffect(() => {
-    if (!roomId) return;
+	// Fetch room members
+	useEffect(() => {
+		if (!roomId) return;
 
-    const fetchRoomMembers = async () => {
-      try {
-        const { data: roomData } = await supabase
-          .from("rooms")
-          .select("members")
-          .eq("id", roomId)
-          .single();
+		const fetchRoomMembers = async () => {
+			try {
+				const { data: roomData } = await supabase
+					.from("rooms")
+					.select("members")
+					.eq("id", roomId)
+					.single();
 
-        if (roomData && roomData.members) {
-          let members = [];
-          try {
-            if (typeof roomData.members === "string") {
-              members = JSON.parse(roomData.members);
-            } else if (Array.isArray(roomData.members)) {
-              members = roomData.members;
-            }
-          } catch (e) {
-            console.error("Failed to parse members:", e);
-            members = [];
-          }
-          setRoomMembers(members);
-        } else {
-          setRoomMembers([]);
-        }
-      } catch (error) {
-        console.warn("Failed to fetch room members:", error);
-        setRoomMembers([]);
-      }
-    };
+				if (roomData && roomData.members) {
+					let members = [];
+					try {
+						if (typeof roomData.members === "string") {
+							members = JSON.parse(roomData.members);
+						} else if (Array.isArray(roomData.members)) {
+							members = roomData.members;
+						}
+					} catch (e) {
+						console.error("Failed to parse members:", e);
+						members = [];
+					}
+					setRoomMembers(members);
+				} else {
+					setRoomMembers([]);
+				}
+			} catch (error) {
+				console.warn("Failed to fetch room members:", error);
+				setRoomMembers([]);
+			}
+		};
 
-    fetchRoomMembers();
-  }, [roomId]);
+		fetchRoomMembers();
+	}, [roomId]);
 
-  // Load existing messages
-  useEffect(() => {
-    if (!roomId || roomMembers.length === 0) return;
+	// Load existing messages
+	useEffect(() => {
+		if (!roomId || roomMembers.length === 0) return;
 
-    const loadMessages = async () => {
-      const { data, error } = await supabase
-        .from("chats")
-        .select("*")
-        .eq("room_id", roomId)
-        .order("created_at", { ascending: true });
+		const loadMessages = async () => {
+			const { data, error } = await supabase
+				.from("chats")
+				.select("*")
+				.eq("room_id", roomId)
+				.order("created_at", { ascending: true });
 
-      if (data) {
-        const filteredData = data.filter((msg: any) =>
-          roomMembers.includes(msg.username)
-        );
+			if (data) {
+				const filteredData = data.filter((msg: any) =>
+					roomMembers.includes(msg.username),
+				);
 
-        setMsgs(
-          filteredData.map((msg: any) => ({
-            id: msg.id,
-            sender: msg.username,
-            text: msg.message,
-            ts: new Date(msg.created_at).getTime(),
-          }))
-        );
-      }
-    };
+				setMsgs(
+					filteredData.map((msg: any) => ({
+						id: msg.id,
+						sender: msg.username,
+						text: msg.message,
+						ts: new Date(msg.created_at).getTime(),
+					})),
+				);
+			}
+		};
 
-    loadMessages();
-  }, [roomId, roomMembers]);
+		loadMessages();
+	}, [roomId, roomMembers]);
 
-  // Realtime message subscription
-  useEffect(() => {
-    if (!roomId) return;
+	// Realtime message subscription
+	useEffect(() => {
+		if (!roomId) return;
 
-    const channel = supabase
-      .channel("public:chats")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "chats",
-        },
-        (payload) => {
-          const msg = payload.new;
-          if (msg.room_id !== roomId) return;
+		const channel = supabase
+			.channel("public:chats")
+			.on(
+				"postgres_changes",
+				{
+					event: "INSERT",
+					schema: "public",
+					table: "chats",
+				},
+				(payload) => {
+					const msg = payload.new;
+					if (msg.room_id !== roomId) return;
 
-          setMsgs((prev) => {
-            const exists = prev.find((m) => m.id === msg.id);
-            if (exists) return prev;
+					setMsgs((prev) => {
+						const exists = prev.find((m) => m.id === msg.id);
+						if (exists) return prev;
 
-            const tempIdx = prev.findIndex(
-              (m) =>
-                m.id.startsWith("temp-") &&
-                m.sender === msg.username &&
-                m.text === msg.message
-            );
+						const tempIdx = prev.findIndex(
+							(m) =>
+								m.id.startsWith("temp-") &&
+								m.sender === msg.username &&
+								m.text === msg.message,
+						);
 
-            if (tempIdx !== -1) {
-              const newMsgs = [...prev];
-              newMsgs[tempIdx] = {
-                id: msg.id,
-                sender: msg.username,
-                text: msg.message,
-                ts: new Date(msg.created_at).getTime(),
-              };
-              return newMsgs;
-            }
+						if (tempIdx !== -1) {
+							const newMsgs = [...prev];
+							newMsgs[tempIdx] = {
+								id: msg.id,
+								sender: msg.username,
+								text: msg.message,
+								ts: new Date(msg.created_at).getTime(),
+							};
+							return newMsgs;
+						}
 
-            return [
-              ...prev,
-              {
-                id: msg.id,
-                sender: msg.username,
-                text: msg.message,
-                ts: new Date(msg.created_at).getTime(),
-              },
-            ];
-          });
-        }
-      )
-      .subscribe();
+						return [
+							...prev,
+							{
+								id: msg.id,
+								sender: msg.username,
+								text: msg.message,
+								ts: new Date(msg.created_at).getTime(),
+							},
+						];
+					});
+				},
+			)
+			.subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [roomId]);
+		return () => {
+			supabase.removeChannel(channel);
+		};
+	}, [roomId]);
 
-  // Auto scroll to bottom
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [msgs]);
+	// Auto scroll to bottom
+	useEffect(() => {
+		endRef.current?.scrollIntoView({ behavior: "smooth" });
+	}, [msgs]);
 
-  // Send message
-  const sendMessage = async () => {
-    const trimmed = text.trim();
-    if (!trimmed || !user || !roomId) return;
+	// Send message
+	const sendMessage = async () => {
+		const trimmed = text.trim();
+		if (!trimmed || !user || !roomId) return;
 
-    const tempId = `temp-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
-    const tempMessage = {
-      id: tempId,
-      sender: user.username,
-      text: trimmed,
-      ts: Date.now(),
-    };
+		const tempId = `temp-${Date.now()}-${Math.random()
+			.toString(36)
+			.substr(2, 9)}`;
+		const tempMessage = {
+			id: tempId,
+			sender: user.username,
+			text: trimmed,
+			ts: Date.now(),
+		};
 
-    setMsgs((prev) => [...prev, tempMessage]);
-    setText("");
+		setMsgs((prev) => [...prev, tempMessage]);
+		setText("");
 
-    try {
-      const { error } = await supabase.from("chats").insert([
-        {
-          room_id: roomId,
-          username: user.username,
-          message: trimmed,
-        },
-      ]);
+		try {
+			const { error } = await supabase.from("chats").insert([
+				{
+					room_id: roomId,
+					username: user.username,
+					message: trimmed,
+				},
+			]);
 
-      if (error) {
-        console.error("Failed to send message:", error);
-        setMsgs((prev) => prev.filter((m) => m.id !== tempId));
-        setText(trimmed);
-        return;
-      }
+			if (error) {
+				console.error("Failed to send message:", error);
+				setMsgs((prev) => prev.filter((m) => m.id !== tempId));
+				setText(trimmed);
+				return;
+			}
 
-      // Update temperature
-      try {
-        const { data: tempData } = await supabase
-          .from("profiles")
-          .select("temperature")
-          .eq("username", user.username)
-          .single();
+			// Update temperature
+			try {
+				const { data: tempData } = await supabase
+					.from("profiles")
+					.select("temperature")
+					.eq("username", user.username)
+					.single();
 
-        if (tempData) {
-          await supabase
-            .from("profiles")
-            .update({ temperature: (tempData.temperature || 0) + 2 })
-            .eq("username", user.username);
-        }
-      } catch (e) {
-        console.error("Temperature update failed:", e);
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error);
-      setMsgs((prev) => prev.filter((m) => m.id !== tempId));
-      setText(trimmed);
-    }
-  };
+				if (tempData) {
+					await supabase
+						.from("profiles")
+						.update({ temperature: (tempData.temperature || 0) + 2 })
+						.eq("username", user.username);
+				}
+			} catch (e) {
+				console.error("Temperature update failed:", e);
+			}
+		} catch (error) {
+			console.error("Unexpected error:", error);
+			setMsgs((prev) => prev.filter((m) => m.id !== tempId));
+			setText(trimmed);
+		}
+	};
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    sendMessage();
-  };
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		sendMessage();
+	};
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  };
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === "Enter" && !e.shiftKey) {
+			e.preventDefault();
+			sendMessage();
+		}
+	};
 
-  // Group consecutive messages by sender
-  // 메시지 그룹핑을 제거하여, 전송할 때마다 항상 새로운 말풍선이 생성되도록 변경
-  const groupMessages = (messages: Msg[]) => {
-    return messages.map((msg) => [msg]);
-  };
+	// Group consecutive messages by sender
+	// 메시지 그룹핑을 제거하여, 전송할 때마다 항상 새로운 말풍선이 생성되도록 변경
+	const groupMessages = (messages: Msg[]) => {
+		return messages.map((msg) => [msg]);
+	};
 
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? "오후" : "오전";
-    const displayHours = hours % 12 || 12;
-    return `${ampm} ${displayHours}:${minutes.toString().padStart(2, "0")}`;
-  };
+	const formatTime = (timestamp: number) => {
+		const date = new Date(timestamp);
+		const hours = date.getHours();
+		const minutes = date.getMinutes();
+		const ampm = hours >= 12 ? "오후" : "오전";
+		const displayHours = hours % 12 || 12;
+		return `${ampm} ${displayHours}:${minutes.toString().padStart(2, "0")}`;
+	};
 
-  if (loading) {
-    return (
-      <LoadingOverlay>
-        <LoadingCard>
-          <LoadingSpinner />
-          <LoadingText>채팅방에 연결하는 중...</LoadingText>
-        </LoadingCard>
-      </LoadingOverlay>
-    );
-  }
+	if (loading) {
+		return (
+			<LoadingOverlay>
+				<LoadingCard>
+					<LoadingSpinner />
+					<LoadingText>채팅방에 연결하는 중...</LoadingText>
+				</LoadingCard>
+			</LoadingOverlay>
+		);
+	}
 
-  const filteredMsgs = msgs.filter((m) => roomMembers.includes(m.sender));
-  const messageGroups = groupMessages(filteredMsgs);
+	const filteredMsgs = msgs.filter((m) => roomMembers.includes(m.sender));
+	const messageGroups = groupMessages(filteredMsgs);
 
-  return (
-    <ChatScreenDiv>
-      <ChatHeader>
-        <HeaderLeft>
-          <RoomTitle>채팅</RoomTitle>
-          {roomId && <RoomId>{roomId.slice(0, 8)}...</RoomId>}
-        </HeaderLeft>
-        <HeaderRight>
-          <MembersList>
-            {roomMembers.map((member) => {
-              const isMe = member === user?.username;
-              const initial = isMe ? "나" : member.charAt(0).toUpperCase();
+	return (
+		<ChatScreenDiv>
+			<ChatHeader>
+				<HeaderLeft>
+					<RoomTitle>채팅</RoomTitle>
+					{roomId && <RoomId>{roomId.slice(0, 8)}...</RoomId>}
+				</HeaderLeft>
+				<HeaderRight>
+					<MembersList>
+						{roomMembers.map((member) => {
+							const isMe = member === user?.username;
+							const initial = isMe ? "나" : member.charAt(0).toUpperCase();
 
-              return (
-                <MemberAvatar
-                  key={member}
-                  isMe={isMe}
-                  title={isMe ? "나" : member}
-                >
-                  {initial}
-                </MemberAvatar>
-              );
-            })}
-          </MembersList>
-          <MemberCount>{roomMembers.length}명 참여</MemberCount>
-        </HeaderRight>
-      </ChatHeader>
+							return (
+								<MemberAvatar
+									key={member}
+									isMe={isMe}
+									title={isMe ? "나" : member}
+								>
+									{initial}
+								</MemberAvatar>
+							);
+						})}
+					</MembersList>
+					<MemberCount>{roomMembers.length}명 참여</MemberCount>
+				</HeaderRight>
+			</ChatHeader>
 
-      {question && selectedOption && (
-        <SelectionBanner>
-          <div className="content">
-            <div className="topic">주제: {question}</div>
-            <div className="selection">나의 선택: {selectedOption}</div>
-            <div className="guide">
-              주제와 관련된 내용으로 대화를 이어가 주세요.
-            </div>
-          </div>
-        </SelectionBanner>
-      )}
+			{question && selectedOption && (
+				<SelectionBanner>
+					<div className="content">
+						<div className="topic">주제: {question}</div>
+						<div className="selection">나의 선택: {selectedOption}</div>
+						<div className="guide">
+							주제와 관련된 내용으로 대화를 이어가 주세요.
+						</div>
+					</div>
+				</SelectionBanner>
+			)}
 
-      <ChatContent>
-        <MessagesContainer>
-          {roomMembers.length === 0 && (
-            <EmptyState>
-              <div className="title">멤버 정보를 불러오는 중...</div>
-            </EmptyState>
-          )}
+			<ChatContent>
+				<MessagesContainer>
+					{roomMembers.length === 0 && (
+						<EmptyState>
+							<div className="title">멤버 정보를 불러오는 중...</div>
+						</EmptyState>
+					)}
 
-          {roomMembers.length > 0 && messageGroups.length === 0 && (
-            <EmptyState>
-              <div className="title">대화를 시작해보세요!</div>
-              <div className="subtitle">
-                첫 번째 메시지를 보내서 대화를 시작해보세요.
-              </div>
-            </EmptyState>
-          )}
+					{roomMembers.length > 0 && messageGroups.length === 0 && (
+						<EmptyState>
+							<div className="title">대화를 시작해보세요!</div>
+							<div className="subtitle">
+								첫 번째 메시지를 보내서 대화를 시작해보세요.
+							</div>
+						</EmptyState>
+					)}
 
-          {messageGroups.map((group, groupIndex) => {
-            const firstMsg = group[0];
-            const currentUsername = user?.username?.toLowerCase().trim();
-            const senderUsername = firstMsg.sender?.toLowerCase().trim();
-            const isMe = !!(
-              currentUsername &&
-              senderUsername &&
-              currentUsername === senderUsername
-            );
-            const initial = isMe
-              ? "나"
-              : firstMsg.sender.charAt(0).toUpperCase();
-            return (
-              <MessageGroup key={`group-${groupIndex}`} isMe={isMe}>
-                <MessageAvatar isMe={isMe}>{initial}</MessageAvatar>
-                <MessageContent isMe={isMe}>
-                  <MessageHeader>
-                    <MessageUsername isMe={isMe}>
-                      {isMe ? user?.username || "나" : firstMsg.sender}
-                    </MessageUsername>
-                    <MessageTimestamp>
-                      {formatTime(firstMsg.ts)}
-                    </MessageTimestamp>
-                  </MessageHeader>
-                  <MessageTextsWrapper isMe={isMe}>
-                    {group.map((msg) => (
-                      <MessageText key={msg.id} isMe={isMe}>
-                        {msg.text}
-                      </MessageText>
-                    ))}
-                  </MessageTextsWrapper>
-                </MessageContent>
-              </MessageGroup>
-            );
-          })}
-          <div ref={endRef} />
-        </MessagesContainer>
+					{messageGroups.map((group, groupIndex) => {
+						const firstMsg = group[0];
+						const currentUsername = user?.username?.toLowerCase().trim();
+						const senderUsername = firstMsg.sender?.toLowerCase().trim();
+						const isMe = !!(
+							currentUsername &&
+							senderUsername &&
+							currentUsername === senderUsername
+						);
+						const initial = isMe
+							? "나"
+							: firstMsg.sender.charAt(0).toUpperCase();
+						return (
+							<MessageGroup key={`group-${groupIndex}`} isMe={isMe}>
+								<MessageAvatar isMe={isMe}>{initial}</MessageAvatar>
+								<MessageContent isMe={isMe}>
+									<MessageHeader>
+										<MessageUsername isMe={isMe}>
+											{isMe ? user?.username || "나" : firstMsg.sender}
+										</MessageUsername>
+										<MessageTimestamp>
+											{formatTime(firstMsg.ts)}
+										</MessageTimestamp>
+									</MessageHeader>
+									<MessageTextsWrapper isMe={isMe}>
+										{group.map((msg) => (
+											<MessageText key={msg.id} isMe={isMe}>
+												{msg.text}
+											</MessageText>
+										))}
+									</MessageTextsWrapper>
+								</MessageContent>
+							</MessageGroup>
+						);
+					})}
+					<div ref={endRef} />
+				</MessagesContainer>
 
-        <InputContainer>
-          <InputForm onSubmit={handleSubmit}>
-            <MessageInput
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈)"
-              rows={1}
-            />
-            <SendButton type="submit" disabled={!text.trim()}>
-              전송
-            </SendButton>
-          </InputForm>
-        </InputContainer>
-      </ChatContent>
-    </ChatScreenDiv>
-  );
+				<InputContainer>
+					<InputForm onSubmit={handleSubmit}>
+						<MessageInput
+							value={text}
+							onChange={(e) => setText(e.target.value)}
+							onKeyDown={handleKeyDown}
+							placeholder="메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈)"
+							rows={1}
+						/>
+						<SendButton type="submit" disabled={!text.trim()}>
+							전송
+						</SendButton>
+					</InputForm>
+				</InputContainer>
+			</ChatContent>
+		</ChatScreenDiv>
+	);
 }
 
 export default ChatScreen;

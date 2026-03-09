@@ -1,4 +1,4 @@
-import {styled} from "styled-components";
+import { styled } from "styled-components";
 
 const NotFoundDiv = styled.div`
     min-height: calc(100vh - 6.25rem);
@@ -9,7 +9,7 @@ const NotFoundDiv = styled.div`
     justify-content: center;
     gap: 1.25rem;
     padding: 2rem 1rem;
-    background: ${props => props.theme.base};
+    background: ${(props) => props.theme.base};
 `;
 
 const Title = styled.h1`
@@ -51,15 +51,15 @@ const HomeLink = styled.a`
 `;
 
 function NotFound() {
-    return (
-        <NotFoundDiv role="main" aria-label="페이지를 찾을 수 없음">
-            <Title>404</Title>
-            <Message>요청하신 페이지를 찾을 수 없습니다.</Message>
-            <Actions>
-                <HomeLink href="/">홈으로 가기</HomeLink>
-            </Actions>
-    </NotFoundDiv>
-    );
+	return (
+		<NotFoundDiv role="main" aria-label="페이지를 찾을 수 없음">
+			<Title>404</Title>
+			<Message>요청하신 페이지를 찾을 수 없습니다.</Message>
+			<Actions>
+				<HomeLink href="/">홈으로 가기</HomeLink>
+			</Actions>
+		</NotFoundDiv>
+	);
 }
 
 export default NotFound;

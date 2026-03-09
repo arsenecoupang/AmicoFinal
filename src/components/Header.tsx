@@ -1,8 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import logoCombination from "../logo/amico_logo_combination.svg";
 import { useAuth } from "../AuthContext";
-import { useState, useRef, useEffect } from "react";
+import logoCombination from "../logo/amico_logo_combination.svg";
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -65,7 +65,7 @@ const NavLi = styled.li<{ isActive?: boolean }>`
     text-decoration: none;
     color: ${(props) => (props.isActive ? props.theme.main : props.theme.sub)};
     background: ${(props) =>
-      props.isActive ? props.theme.baseHover : "transparent"};
+			props.isActive ? props.theme.baseHover : "transparent"};
     font-size: 1.1rem;
     padding: 0.625rem 1.125rem;
     border-radius: 0.5rem;
@@ -83,7 +83,7 @@ const NavLi = styled.li<{ isActive?: boolean }>`
     text-decoration: none;
     color: ${(props) => (props.isActive ? props.theme.main : props.theme.sub)};
     background: ${(props) =>
-      props.isActive ? props.theme.baseHover : "transparent"};
+			props.isActive ? props.theme.baseHover : "transparent"};
     font-size: 1.1rem;
     padding: 0.625rem 1.125rem;
     border-radius: 0.5rem;
@@ -128,8 +128,8 @@ const UserAvatar = styled.div<{ isClickable?: boolean }>`
 
   &:hover {
     ${(props) =>
-      props.isClickable &&
-      `
+			props.isClickable &&
+			`
       background: ${props.theme.mainHover};
       border: 2px solid ${props.theme.baseHover};
     `}
@@ -161,7 +161,7 @@ const UserDropdown = styled.div<{ isOpen: boolean }>`
   opacity: ${(props) => (props.isOpen ? "1" : "0")};
   visibility: ${(props) => (props.isOpen ? "visible" : "hidden")};
   transform: ${(props) =>
-    props.isOpen ? "translateY(0)" : "translateY(-10px)"};
+		props.isOpen ? "translateY(0)" : "translateY(-10px)"};
   transition: all 0.2s ease;
 
   @media (max-width: 48rem) {
@@ -238,92 +238,92 @@ const NavRightSide = styled.div`
 `;
 
 function Header() {
-  const { user, logout } = useAuth();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+	const { user, logout } = useAuth();
+	const location = useLocation();
+	const navigate = useNavigate();
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/login");
-    } catch (error) {
-      console.error("로그아웃 실패:", error);
-    }
-    setIsDropdownOpen(false);
-  };
+	const handleLogout = async () => {
+		try {
+			await logout();
+			navigate("/login");
+		} catch (error) {
+			console.error("로그아웃 실패:", error);
+		}
+		setIsDropdownOpen(false);
+	};
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+	const toggleDropdown = () => {
+		setIsDropdownOpen(!isDropdownOpen);
+	};
 
-  // 드롭다운 외부 클릭 시 닫기
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
+	// 드롭다운 외부 클릭 시 닫기
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				setIsDropdownOpen(false);
+			}
+		};
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
 
-  const isCurrentPage = (path: string) => {
-    if (path === "/home") {
-      return location.pathname === "/" || location.pathname === "/home";
-    }
-    return location.pathname === path;
-  };
+	const isCurrentPage = (path: string) => {
+		if (path === "/home") {
+			return location.pathname === "/" || location.pathname === "/home";
+		}
+		return location.pathname === path;
+	};
 
-  return (
-    <HeaderContainer>
-      <Logo>
-        <LogoImg src={logoCombination} alt="Amico Logo" />
-      </Logo>
+	return (
+		<HeaderContainer>
+			<Logo>
+				<LogoImg src={logoCombination} alt="Amico Logo" />
+			</Logo>
 
-      {user && (
-        <NavRightSide>
-          <NavArea>
-            <NavUl>
-              <NavLi isActive={isCurrentPage("/home")}>
-                <Link to={"/home"}>Home</Link>
-              </NavLi>
-              <NavLi isActive={isCurrentPage("/quiz")}>
-                <Link to={"/quiz"}>Quiz</Link>
-              </NavLi>
-              <NavLi isActive={isCurrentPage("/chat")}>
-                <Link to={"/chat"}>Chat</Link>
-              </NavLi>
-            </NavUl>
-          </NavArea>
+			{user && (
+				<NavRightSide>
+					<NavArea>
+						<NavUl>
+							<NavLi isActive={isCurrentPage("/home")}>
+								<Link to={"/home"}>Home</Link>
+							</NavLi>
+							<NavLi isActive={isCurrentPage("/quiz")}>
+								<Link to={"/quiz"}>Quiz</Link>
+							</NavLi>
+							<NavLi isActive={isCurrentPage("/chat")}>
+								<Link to={"/chat"}>Chat</Link>
+							</NavLi>
+						</NavUl>
+					</NavArea>
 
-          <UserSection ref={dropdownRef}>
-            <UserAvatar isClickable onClick={toggleDropdown}>
-              {user.username ? user.username.charAt(0).toUpperCase() : "?"}
-            </UserAvatar>
+					<UserSection ref={dropdownRef}>
+						<UserAvatar isClickable onClick={toggleDropdown}>
+							{user.username ? user.username.charAt(0).toUpperCase() : "?"}
+						</UserAvatar>
 
-            <UserDropdown isOpen={isDropdownOpen}>
-              <DropdownHeader>
-                <UserName>{user.username}</UserName>
-                <UserEmail>{user.email}</UserEmail>
-              </DropdownHeader>
+						<UserDropdown isOpen={isDropdownOpen}>
+							<DropdownHeader>
+								<UserName>{user.username}</UserName>
+								<UserEmail>{user.email}</UserEmail>
+							</DropdownHeader>
 
-              <DropdownItem className="logout" onClick={handleLogout}>
-                <span>로그아웃</span>
-              </DropdownItem>
-            </UserDropdown>
-          </UserSection>
-        </NavRightSide>
-      )}
-    </HeaderContainer>
-  );
+							<DropdownItem className="logout" onClick={handleLogout}>
+								<span>로그아웃</span>
+							</DropdownItem>
+						</UserDropdown>
+					</UserSection>
+				</NavRightSide>
+			)}
+		</HeaderContainer>
+	);
 }
 
 export default Header;

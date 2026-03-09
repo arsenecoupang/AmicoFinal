@@ -11,12 +11,12 @@ const RootDiv = styled.div`
 `;
 
 function Root() {
-  return (
-    <RootDiv>
-      <Header />
-      <Outlet />
-    </RootDiv>
-  );
+	return (
+		<RootDiv>
+			<Header />
+			<Outlet />
+		</RootDiv>
+	);
 }
 
 export default Root;

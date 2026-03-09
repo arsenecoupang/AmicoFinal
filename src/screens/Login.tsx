@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 import { useAuth } from "../AuthContext";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../db";
 
 const Container = styled.div`
@@ -46,7 +47,7 @@ const LoginForm = styled.form`
 `;
 
 const LoginInput = styled.input.withConfig({
-  shouldForwardProp: (prop) => prop !== "error",
+	shouldForwardProp: (prop) => prop !== "error",
 })<{ error?: boolean }>`
   border: none;
   border-bottom: 2px solid
@@ -129,390 +130,390 @@ const HelperText = styled.p`
 `;
 
 function Login() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    email: "",
-    realname: "",
-    class: "1반",
-  });
-  const [errors, setErrors] = useState({
-    username: false,
-    password: false,
-    email: false,
-    realname: false,
-    class: false,
-  });
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+	const [isLogin, setIsLogin] = useState(true);
+	const [formData, setFormData] = useState({
+		username: "",
+		password: "",
+		email: "",
+		realname: "",
+		class: "1반",
+	});
+	const [errors, setErrors] = useState({
+		username: false,
+		password: false,
+		email: false,
+		realname: false,
+		class: false,
+	});
+	const { login } = useAuth();
+	const navigate = useNavigate();
+	const [loading, setLoading] = useState(false);
+	const [errorMsg, setErrorMsg] = useState("");
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setErrors({ ...errors, [name]: false });
-    setErrorMsg("");
-  };
+	const handleInputChange = (
+		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+	) => {
+		const { name, value } = e.target;
+		setFormData({ ...formData, [name]: value });
+		setErrors({ ...errors, [name]: false });
+		setErrorMsg("");
+	};
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const newErrors = {
-      // username is only required when signing up
-      username: !isLogin && formData.username.trim() === "",
-      password: formData.password.trim() === "",
-      // email is required for login and signup
-      email: formData.email.trim() === "",
-      realname: !isLogin && formData.realname.trim() === "",
-      class: !isLogin && formData.class.trim() === "",
-    };
-    setErrors(newErrors);
-    if (
-      newErrors.username ||
-      newErrors.password ||
-      newErrors.email ||
-      newErrors.realname ||
-      newErrors.class
-    )
-      return;
-    setLoading(true);
-    setErrorMsg("");
-    try {
-      console.log("Attempting login with:", {
-        email: formData.email,
-        password: "***",
-      });
-      console.log("Supabase client initialized:", !!supabase);
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const newErrors = {
+			// username is only required when signing up
+			username: !isLogin && formData.username.trim() === "",
+			password: formData.password.trim() === "",
+			// email is required for login and signup
+			email: formData.email.trim() === "",
+			realname: !isLogin && formData.realname.trim() === "",
+			class: !isLogin && formData.class.trim() === "",
+		};
+		setErrors(newErrors);
+		if (
+			newErrors.username ||
+			newErrors.password ||
+			newErrors.email ||
+			newErrors.realname ||
+			newErrors.class
+		)
+			return;
+		setLoading(true);
+		setErrorMsg("");
+		try {
+			console.log("Attempting login with:", {
+				email: formData.email,
+				password: "***",
+			});
+			console.log("Supabase client initialized:", !!supabase);
 
-      if (isLogin) {
-        // 로그인
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
+			if (isLogin) {
+				// 로그인
+				const { data, error } = await supabase.auth.signInWithPassword({
+					email: formData.email,
+					password: formData.password,
+				});
 
-        console.log("Login response:", { data: !!data, error: error?.message });
+				console.log("Login response:", { data: !!data, error: error?.message });
 
-        if (error) throw error;
+				if (error) throw error;
 
-        // 프로필 정보 가져오기
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("username, realname, role")
-          .eq("id", data.user.id)
-          .single();
+				// 프로필 정보 가져오기
+				const { data: profileData } = await supabase
+					.from("profiles")
+					.select("username, realname, role")
+					.eq("id", data.user.id)
+					.single();
 
-        console.log("Profile data:", profileData);
+				console.log("Profile data:", profileData);
 
-        login({
-          id: data.user.id,
-          username: profileData?.username || "",
-          email: formData.email,
-          role: profileData?.role || undefined,
-        });
-        navigate("/home");
-      } else {
-        // 회원가입
-        console.log("Attempting signup with:", { email: formData.email });
+				login({
+					id: data.user.id,
+					username: profileData?.username || "",
+					email: formData.email,
+					role: profileData?.role || undefined,
+				});
+				navigate("/home");
+			} else {
+				// 회원가입
+				console.log("Attempting signup with:", { email: formData.email });
 
-        // 1. 중복 이메일 검사
-        const { data: existingEmail } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("email", formData.email)
-          .single();
+				// 1. 중복 이메일 검사
+				const { data: existingEmail } = await supabase
+					.from("profiles")
+					.select("email")
+					.eq("email", formData.email)
+					.single();
 
-        if (existingEmail) {
-          throw new Error("이미 사용 중인 이메일입니다.");
-        }
+				if (existingEmail) {
+					throw new Error("이미 사용 중인 이메일입니다.");
+				}
 
-        // 2. 중복 별명 검사
-        const { data: existingUsername } = await supabase
-          .from("profiles")
-          .select("username")
-          .eq("username", formData.username)
-          .single();
+				// 2. 중복 별명 검사
+				const { data: existingUsername } = await supabase
+					.from("profiles")
+					.select("username")
+					.eq("username", formData.username)
+					.single();
 
-        if (existingUsername) {
-          throw new Error(
-            "이미 사용 중인 별명입니다. 다른 별명을 선택해주세요."
-          );
-        }
+				if (existingUsername) {
+					throw new Error(
+						"이미 사용 중인 별명입니다. 다른 별명을 선택해주세요.",
+					);
+				}
 
-        // 3. 중복 실명 검사 (같은 반 내에서)
-        const { data: existingRealname } = await supabase
-          .from("profiles")
-          .select("realname, class")
-          .eq("realname", formData.realname)
-          .eq("class", formData.class)
-          .single();
+				// 3. 중복 실명 검사 (같은 반 내에서)
+				const { data: existingRealname } = await supabase
+					.from("profiles")
+					.select("realname, class")
+					.eq("realname", formData.realname)
+					.eq("class", formData.class)
+					.single();
 
-        if (existingRealname) {
-          throw new Error(
-            `${formData.class}에 이미 같은 이름이 있습니다. 본명을 정확히 입력해주세요.`
-          );
-        }
+				if (existingRealname) {
+					throw new Error(
+						`${formData.class}에 이미 같은 이름이 있습니다. 본명을 정확히 입력해주세요.`,
+					);
+				}
 
-        console.log("Starting signup process...");
+				console.log("Starting signup process...");
 
-        // Supabase 연결 테스트
-        try {
-          const { data: testData, error: testError } = await supabase
-            .from("profiles")
-            .select("id")
-            .limit(1);
-          console.log("Supabase connection test:", { testData, testError });
+				// Supabase 연결 테스트
+				try {
+					const { data: testData, error: testError } = await supabase
+						.from("profiles")
+						.select("id")
+						.limit(1);
+					console.log("Supabase connection test:", { testData, testError });
 
-          if (testError) {
-            console.error(
-              "Supabase connection or table access failed:",
-              testError
-            );
-          }
-        } catch (testErr) {
-          console.error("Supabase test failed:", testErr);
-        }
+					if (testError) {
+						console.error(
+							"Supabase connection or table access failed:",
+							testError,
+						);
+					}
+				} catch (testErr) {
+					console.error("Supabase test failed:", testErr);
+				}
 
-        // 회원가입 시도
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              username: formData.username,
-              realname: formData.realname,
-              class: formData.class,
-            },
-          },
-        });
+				// 회원가입 시도
+				const { data, error } = await supabase.auth.signUp({
+					email: formData.email,
+					password: formData.password,
+					options: {
+						data: {
+							username: formData.username,
+							realname: formData.realname,
+							class: formData.class,
+						},
+					},
+				});
 
-        console.log("Signup response:", {
-          hasData: !!data,
-          hasUser: !!data?.user,
-          hasSession: !!data?.session,
-          userId: data?.user?.id,
-          errorMessage: error?.message,
-          errorCode: error?.status,
-        });
+				console.log("Signup response:", {
+					hasData: !!data,
+					hasUser: !!data?.user,
+					hasSession: !!data?.session,
+					userId: data?.user?.id,
+					errorMessage: error?.message,
+					errorCode: error?.status,
+				});
 
-        if (error) {
-          console.error("Signup error:", error);
-          throw new Error(`회원가입 실패: ${error.message}`);
-        }
+				if (error) {
+					console.error("Signup error:", error);
+					throw new Error(`회원가입 실패: ${error.message}`);
+				}
 
-        if (!data?.user) {
-          throw new Error("사용자 정보를 받아오지 못했습니다.");
-        }
+				if (!data?.user) {
+					throw new Error("사용자 정보를 받아오지 못했습니다.");
+				}
 
-        console.log("User created successfully, attempting login first...");
+				console.log("User created successfully, attempting login first...");
 
-        // 먼저 로그인하여 세션 확보
-        const { data: signInData, error: signInError } =
-          await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
+				// 먼저 로그인하여 세션 확보
+				const { data: signInData, error: signInError } =
+					await supabase.auth.signInWithPassword({
+						email: formData.email,
+						password: formData.password,
+					});
 
-        console.log("Sign in after signup:", {
-          hasSession: !!signInData?.session,
-          hasUser: !!signInData?.user,
-          error: signInError?.message,
-        });
+				console.log("Sign in after signup:", {
+					hasSession: !!signInData?.session,
+					hasUser: !!signInData?.user,
+					error: signInError?.message,
+				});
 
-        if (signInError) {
-          console.error("Sign in after signup failed:", signInError);
-          throw new Error(`로그인 실패: ${signInError.message}`);
-        }
+				if (signInError) {
+					console.error("Sign in after signup failed:", signInError);
+					throw new Error(`로그인 실패: ${signInError.message}`);
+				}
 
-        if (!signInData?.session || !signInData?.user) {
-          throw new Error(
-            "로그인 세션을 생성할 수 없습니다. Supabase 설정을 확인해주세요."
-          );
-        }
+				if (!signInData?.session || !signInData?.user) {
+					throw new Error(
+						"로그인 세션을 생성할 수 없습니다. Supabase 설정을 확인해주세요.",
+					);
+				}
 
-        console.log("Login successful, now creating profile...");
-        console.log("User ID for profile:", signInData.user.id);
-        console.log("Profile data to insert:", {
-          id: signInData.user.id,
-          email: formData.email,
-          username: formData.username,
-          realname: formData.realname,
-          class: formData.class,
-          temperature: 0,
-        });
+				console.log("Login successful, now creating profile...");
+				console.log("User ID for profile:", signInData.user.id);
+				console.log("Profile data to insert:", {
+					id: signInData.user.id,
+					email: formData.email,
+					username: formData.username,
+					realname: formData.realname,
+					class: formData.class,
+					temperature: 0,
+				});
 
-        // 로그인 후 프로필 생성 (인증된 상태에서)
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .insert([
-            {
-              id: signInData.user.id,
-              email: formData.email,
-              username: formData.username,
-              realname: formData.realname,
-              class: formData.class,
-              temperature: 0,
-            },
-          ])
-          .select()
-          .single();
+				// 로그인 후 프로필 생성 (인증된 상태에서)
+				const { data: profileData, error: profileError } = await supabase
+					.from("profiles")
+					.insert([
+						{
+							id: signInData.user.id,
+							email: formData.email,
+							username: formData.username,
+							realname: formData.realname,
+							class: formData.class,
+							temperature: 0,
+						},
+					])
+					.select()
+					.single();
 
-        console.log("Profile creation detailed result:", {
-          profileData,
-          profileError,
-          errorMessage: profileError?.message,
-          errorCode: profileError?.code,
-          errorDetails: profileError?.details,
-          hint: profileError?.hint,
-        });
+				console.log("Profile creation detailed result:", {
+					profileData,
+					profileError,
+					errorMessage: profileError?.message,
+					errorCode: profileError?.code,
+					errorDetails: profileError?.details,
+					hint: profileError?.hint,
+				});
 
-        if (profileError) {
-          if (profileError.code === "23505") {
-            console.log("Profile already exists, continuing...");
-          } else if (profileError.code === "42501") {
-            console.error("Permission denied - check RLS policies!");
-            throw new Error(
-              "프로필 생성 권한이 없습니다. 관리자에게 문의하세요."
-            );
-          } else {
-            console.error("Profile creation failed:", profileError);
-            throw new Error(`프로필 생성 실패: ${profileError.message}`);
-          }
-        } else {
-          console.log("Profile created successfully:", profileData);
-        }
+				if (profileError) {
+					if (profileError.code === "23505") {
+						console.log("Profile already exists, continuing...");
+					} else if (profileError.code === "42501") {
+						console.error("Permission denied - check RLS policies!");
+						throw new Error(
+							"프로필 생성 권한이 없습니다. 관리자에게 문의하세요.",
+						);
+					} else {
+						console.error("Profile creation failed:", profileError);
+						throw new Error(`프로필 생성 실패: ${profileError.message}`);
+					}
+				} else {
+					console.log("Profile created successfully:", profileData);
+				}
 
-        // AuthContext에 로그인 상태 설정
-        login({
-          id: signInData.user.id,
-          username: formData.username,
-          email: formData.email,
-        });
+				// AuthContext에 로그인 상태 설정
+				login({
+					id: signInData.user.id,
+					username: formData.username,
+					email: formData.email,
+				});
 
-        console.log("Signup and login completed successfully");
-        navigate("/home");
-      }
-    } catch (err: any) {
-      console.error("Auth error:", err);
-      setErrorMsg(err.message || "오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
+				console.log("Signup and login completed successfully");
+				navigate("/home");
+			}
+		} catch (err: any) {
+			console.error("Auth error:", err);
+			setErrorMsg(err.message || "오류가 발생했습니다.");
+		} finally {
+			setLoading(false);
+		}
+	};
 
-  return (
-    <Container>
-      <LoginForm onSubmit={handleSubmit}>
-        <h1>{isLogin ? "로그인" : "회원가입"}</h1>
-        <div>
-          {/* Email should be provided for both login and signup */}
-          <HelperText>이메일</HelperText>
-          <LoginInput
-            type="email"
-            name="email"
-            placeholder="이메일을 입력하세요"
-            value={formData.email}
-            onChange={handleInputChange}
-            error={errors.email}
-          />
-          {errors.email && (
-            <HelperText style={{ color: "#e74c3c" }}>
-              이메일을 입력하세요.
-            </HelperText>
-          )}
+	return (
+		<Container>
+			<LoginForm onSubmit={handleSubmit}>
+				<h1>{isLogin ? "로그인" : "회원가입"}</h1>
+				<div>
+					{/* Email should be provided for both login and signup */}
+					<HelperText>이메일</HelperText>
+					<LoginInput
+						type="email"
+						name="email"
+						placeholder="이메일을 입력하세요"
+						value={formData.email}
+						onChange={handleInputChange}
+						error={errors.email}
+					/>
+					{errors.email && (
+						<HelperText style={{ color: "#e74c3c" }}>
+							이메일을 입력하세요.
+						</HelperText>
+					)}
 
-          {!isLogin && (
-            <>
-              <HelperText>실제 이름</HelperText>
-              <LoginInput
-                type="text"
-                name="realname"
-                placeholder="실제 이름을 입력하세요"
-                value={formData.realname}
-                onChange={handleInputChange}
-                error={errors.realname}
-              />
-              {errors.realname && (
-                <HelperText style={{ color: "#e74c3c" }}>
-                  실제 이름을 입력하세요.
-                </HelperText>
-              )}
+					{!isLogin && (
+						<>
+							<HelperText>실제 이름</HelperText>
+							<LoginInput
+								type="text"
+								name="realname"
+								placeholder="실제 이름을 입력하세요"
+								value={formData.realname}
+								onChange={handleInputChange}
+								error={errors.realname}
+							/>
+							{errors.realname && (
+								<HelperText style={{ color: "#e74c3c" }}>
+									실제 이름을 입력하세요.
+								</HelperText>
+							)}
 
-              <HelperText>반</HelperText>
-              <LoginSelect
-                name="class"
-                value={formData.class}
-                onChange={handleInputChange}
-                error={errors.class}
-              >
-                <option value="1반">1반</option>
-                <option value="2반">2반</option>
-                <option value="3반">3반</option>
-                <option value="4반">4반</option>
-                <option value="5반">5반</option>
-                <option value="6반">6반</option>
-                <option value="7반">7반</option>
-                <option value="8반">8반</option>
-              </LoginSelect>
-              {errors.class && (
-                <HelperText style={{ color: "#e74c3c" }}>
-                  반을 선택해주세요.
-                </HelperText>
-              )}
-              <HelperText>사용자 아이디</HelperText>
-              <LoginInput
-                type="text"
-                name="username"
-                placeholder="사용자 아이디를 입력하세요"
-                value={formData.username}
-                onChange={handleInputChange}
-                error={errors.username}
-              />
-              {errors.username && (
-                <HelperText style={{ color: "#e74c3c" }}>
-                  사용자 아이디를 입력하세요.
-                </HelperText>
-              )}
-            </>
-          )}
-          <HelperText>비밀번호</HelperText>
-          <LoginInput
-            type="password"
-            name="password"
-            placeholder="비밀번호를 입력하세요"
-            value={formData.password}
-            onChange={handleInputChange}
-            error={errors.password}
-          />
-          {errors.password && (
-            <HelperText style={{ color: "#e74c3c" }}>
-              비밀번호를 입력하세요.
-            </HelperText>
-          )}
-          <LoginButton type="submit" disabled={loading}>
-            {isLogin ? "로그인" : "회원가입"}
-          </LoginButton>
-          {errorMsg && (
-            <HelperText style={{ color: "#e74c3c", whiteSpace: "pre-line" }}>
-              {errorMsg}
-            </HelperText>
-          )}
-        </div>
-        <HelperText>
-          {isLogin ? "계정이 없으신가요?" : "이미 계정이 있으신가요?"}
-          <span
-            style={{ color: "#A8C686", cursor: "pointer" }}
-            onClick={() => setIsLogin(!isLogin)}
-          >
-            {isLogin ? " 회원가입" : " 로그인"}
-          </span>
-        </HelperText>
-      </LoginForm>
-    </Container>
-  );
+							<HelperText>반</HelperText>
+							<LoginSelect
+								name="class"
+								value={formData.class}
+								onChange={handleInputChange}
+								error={errors.class}
+							>
+								<option value="1반">1반</option>
+								<option value="2반">2반</option>
+								<option value="3반">3반</option>
+								<option value="4반">4반</option>
+								<option value="5반">5반</option>
+								<option value="6반">6반</option>
+								<option value="7반">7반</option>
+								<option value="8반">8반</option>
+							</LoginSelect>
+							{errors.class && (
+								<HelperText style={{ color: "#e74c3c" }}>
+									반을 선택해주세요.
+								</HelperText>
+							)}
+							<HelperText>사용자 아이디</HelperText>
+							<LoginInput
+								type="text"
+								name="username"
+								placeholder="사용자 아이디를 입력하세요"
+								value={formData.username}
+								onChange={handleInputChange}
+								error={errors.username}
+							/>
+							{errors.username && (
+								<HelperText style={{ color: "#e74c3c" }}>
+									사용자 아이디를 입력하세요.
+								</HelperText>
+							)}
+						</>
+					)}
+					<HelperText>비밀번호</HelperText>
+					<LoginInput
+						type="password"
+						name="password"
+						placeholder="비밀번호를 입력하세요"
+						value={formData.password}
+						onChange={handleInputChange}
+						error={errors.password}
+					/>
+					{errors.password && (
+						<HelperText style={{ color: "#e74c3c" }}>
+							비밀번호를 입력하세요.
+						</HelperText>
+					)}
+					<LoginButton type="submit" disabled={loading}>
+						{isLogin ? "로그인" : "회원가입"}
+					</LoginButton>
+					{errorMsg && (
+						<HelperText style={{ color: "#e74c3c", whiteSpace: "pre-line" }}>
+							{errorMsg}
+						</HelperText>
+					)}
+				</div>
+				<HelperText>
+					{isLogin ? "계정이 없으신가요?" : "이미 계정이 있으신가요?"}
+					<span
+						style={{ color: "#A8C686", cursor: "pointer" }}
+						onClick={() => setIsLogin(!isLogin)}
+					>
+						{isLogin ? " 회원가입" : " 로그인"}
+					</span>
+				</HelperText>
+			</LoginForm>
+		</Container>
+	);
 }
 
 export default Login;

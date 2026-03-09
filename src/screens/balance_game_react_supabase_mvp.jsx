@@ -89,8 +89,8 @@ on conflict do nothing;
 
 */
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;

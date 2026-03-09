@@ -1,8 +1,8 @@
-import { styled } from "styled-components";
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { supabase } from "../db";
+import { useNavigate } from "react-router-dom";
+import { styled } from "styled-components";
 import { useAuth } from "../AuthContext";
+import { supabase } from "../db";
 
 const QuizScreenDiv = styled.div`
   min-height: calc(100vh - 6.25rem);
@@ -126,14 +126,14 @@ const OptionBase = styled.button`
 `;
 
 const OptionA = styled(OptionBase).withConfig({
-  shouldForwardProp: (prop) => prop !== "selected",
+	shouldForwardProp: (prop) => prop !== "selected",
 })<{ selected?: boolean }>`
   background: ${(props) => (props.selected ? props.theme.mainHover : "#fff")};
   color: ${(props) => (props.selected ? "#fff" : props.theme.main)};
   border: 2px solid
     ${(props) => (props.selected ? props.theme.mainHover : props.theme.main)};
   box-shadow: ${(props) =>
-    props.selected ? "0 0 0 3px #A8C68644" : "0 2px 10px rgba(0,0,0,0.06)"};
+		props.selected ? "0 0 0 3px #A8C68644" : "0 2px 10px rgba(0,0,0,0.06)"};
   &:hover {
     color: ${(props) => props.theme.base};
     background: ${(props) => props.theme.mainHover};
@@ -142,14 +142,14 @@ const OptionA = styled(OptionBase).withConfig({
 `;
 
 const OptionB = styled(OptionBase).withConfig({
-  shouldForwardProp: (prop) => prop !== "selected",
+	shouldForwardProp: (prop) => prop !== "selected",
 })<{ selected?: boolean }>`
   background: ${(props) => (props.selected ? props.theme.mainHover : "#fff")};
   color: ${(props) => (props.selected ? "#fff" : props.theme.main)};
   border: 2px solid
     ${(props) => (props.selected ? props.theme.mainHover : props.theme.main)};
   box-shadow: ${(props) =>
-    props.selected ? "0 0 0 3px #A8C68644" : "0 2px 10px rgba(0,0,0,0.06)"};
+		props.selected ? "0 0 0 3px #A8C68644" : "0 2px 10px rgba(0,0,0,0.06)"};
   &:hover {
     color: ${(props) => props.theme.base};
     background-color: ${(props) => props.theme.mainHover};
@@ -158,296 +158,296 @@ const OptionB = styled(OptionBase).withConfig({
 `;
 
 function QuizScreen() {
-  const [quiz, setQuiz] = useState<any>(null);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
-  const { user } = useAuth();
+	const [quiz, setQuiz] = useState<any>(null);
+	const [selected, setSelected] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+	const navigate = useNavigate();
+	const { user } = useAuth();
 
-  // 오늘의 퀴즈 불러오기
-  useEffect(() => {
-    async function fetchQuiz() {
-      setLoading(true);
-      setError("");
+	// 오늘의 퀴즈 불러오기
+	useEffect(() => {
+		async function fetchQuiz() {
+			setLoading(true);
+			setError("");
 
-      try {
-        console.log("Fetching today's quiz...");
+			try {
+				console.log("Fetching today's quiz...");
 
-        // 방법 1: 가장 최근 퀴즈 가져오기 (날짜 필터링 없이)
-        const { data: latestQuiz, error: latestError } = await supabase
-          .from("questions")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
+				// 방법 1: 가장 최근 퀴즈 가져오기 (날짜 필터링 없이)
+				const { data: latestQuiz, error: latestError } = await supabase
+					.from("questions")
+					.select("*")
+					.order("created_at", { ascending: false })
+					.limit(1)
+					.single();
 
-        console.log("Latest quiz result:", { latestQuiz, latestError });
+				console.log("Latest quiz result:", { latestQuiz, latestError });
 
-        if (latestError && latestError.code !== "PGRST116") {
-          // PGRST116은 "no rows returned" 에러
-          throw latestError;
-        }
+				if (latestError && latestError.code !== "PGRST116") {
+					// PGRST116은 "no rows returned" 에러
+					throw latestError;
+				}
 
-        if (latestQuiz) {
-          setQuiz(latestQuiz);
-          setError("");
-        } else {
-          // 퀴즈가 없으면 오늘 날짜로 다시 시도
-          console.log("No quiz found, trying with date filter...");
+				if (latestQuiz) {
+					setQuiz(latestQuiz);
+					setError("");
+				} else {
+					// 퀴즈가 없으면 오늘 날짜로 다시 시도
+					console.log("No quiz found, trying with date filter...");
 
-          const today = new Date();
-          const todayStr = today.toISOString().slice(0, 10);
-          const yesterdayStr = new Date(today.getTime() - 24 * 60 * 60 * 1000)
-            .toISOString()
-            .slice(0, 10);
+					const today = new Date();
+					const todayStr = today.toISOString().slice(0, 10);
+					const yesterdayStr = new Date(today.getTime() - 24 * 60 * 60 * 1000)
+						.toISOString()
+						.slice(0, 10);
 
-          console.log(
-            "Searching for quiz from:",
-            yesterdayStr,
-            "to:",
-            todayStr
-          );
+					console.log(
+						"Searching for quiz from:",
+						yesterdayStr,
+						"to:",
+						todayStr,
+					);
 
-          const { data: dateFilteredQuiz, error: dateError } = await supabase
-            .from("questions")
-            .select("*")
-            .gte("created_at", yesterdayStr + "T00:00:00")
-            .lte("created_at", todayStr + "T23:59:59")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
+					const { data: dateFilteredQuiz, error: dateError } = await supabase
+						.from("questions")
+						.select("*")
+						.gte("created_at", yesterdayStr + "T00:00:00")
+						.lte("created_at", todayStr + "T23:59:59")
+						.order("created_at", { ascending: false })
+						.limit(1)
+						.single();
 
-          console.log("Date filtered quiz result:", {
-            dateFilteredQuiz,
-            dateError,
-          });
+					console.log("Date filtered quiz result:", {
+						dateFilteredQuiz,
+						dateError,
+					});
 
-          if (dateFilteredQuiz) {
-            setQuiz(dateFilteredQuiz);
-            setError("");
-          } else {
-            setError(
-              "오늘의 퀴즈를 불러올 수 없습니다. 관리자에게 문의하세요."
-            );
-          }
-        }
-      } catch (err: any) {
-        console.error("Error fetching quiz:", err);
-        setError(`퀴즈 로딩 오류: ${err.message || "알 수 없는 오류"}`);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchQuiz();
-  }, []);
+					if (dateFilteredQuiz) {
+						setQuiz(dateFilteredQuiz);
+						setError("");
+					} else {
+						setError(
+							"오늘의 퀴즈를 불러올 수 없습니다. 관리자에게 문의하세요.",
+						);
+					}
+				}
+			} catch (err: any) {
+				console.error("Error fetching quiz:", err);
+				setError(`퀴즈 로딩 오류: ${err.message || "알 수 없는 오류"}`);
+			} finally {
+				setLoading(false);
+			}
+		}
+		fetchQuiz();
+	}, []);
 
-  // 답 제출 및 채팅방 생성
-  const handleSubmit = async () => {
-    console.log("=== SUBMIT STARTED ===");
-    console.log("Current state:", {
-      quiz: !!quiz,
-      selected,
-      user: user?.username,
-    });
+	// 답 제출 및 채팅방 생성
+	const handleSubmit = async () => {
+		console.log("=== SUBMIT STARTED ===");
+		console.log("Current state:", {
+			quiz: !!quiz,
+			selected,
+			user: user?.username,
+		});
 
-    if (!quiz) {
-      console.error("No quiz available");
-      setError("퀴즈가 로드되지 않았습니다.");
-      return;
-    }
+		if (!quiz) {
+			console.error("No quiz available");
+			setError("퀴즈가 로드되지 않았습니다.");
+			return;
+		}
 
-    if (!selected) {
-      console.error("No option selected");
-      setError("선택지를 선택해주세요.");
-      return;
-    }
+		if (!selected) {
+			console.error("No option selected");
+			setError("선택지를 선택해주세요.");
+			return;
+		}
 
-    if (!user) {
-      console.error("User not logged in");
-      setError("로그인이 필요합니다.");
-      return;
-    }
+		if (!user) {
+			console.error("User not logged in");
+			setError("로그인이 필요합니다.");
+			return;
+		}
 
-    setLoading(true);
-    setError("");
+		setLoading(true);
+		setError("");
 
-    try {
-      console.log("Submitting answer:", {
-        quizId: quiz.id,
-        selected,
-        user: user.username,
-      });
+		try {
+			console.log("Submitting answer:", {
+				quizId: quiz.id,
+				selected,
+				user: user.username,
+			});
 
-      // rooms 테이블에서 해당 답변 방이 있는지 확인
-      const { data: roomData, error: roomError } = await supabase
-        .from("rooms")
-        .select("*")
-        .eq("question_id", quiz.id)
-        .eq("option", selected)
-        .single();
+			// rooms 테이블에서 해당 답변 방이 있는지 확인
+			const { data: roomData, error: roomError } = await supabase
+				.from("rooms")
+				.select("*")
+				.eq("question_id", quiz.id)
+				.eq("option", selected)
+				.single();
 
-      console.log("Room check result:", { roomData, roomError });
+			console.log("Room check result:", { roomData, roomError });
 
-      let roomId = roomData?.id;
+			let roomId = roomData?.id;
 
-      if (!roomId) {
-        // 없으면 방 생성
-        console.log("Creating new room...");
-        const { data: newRoom, error: createError } = await supabase
-          .from("rooms")
-          .insert([
-            {
-              id: crypto.randomUUID(), // 명시적으로 UUID 생성
-              question_id: quiz.id,
-              option: selected,
-              members: JSON.stringify([user.username]),
-            },
-          ])
-          .select()
-          .single();
+			if (!roomId) {
+				// 없으면 방 생성
+				console.log("Creating new room...");
+				const { data: newRoom, error: createError } = await supabase
+					.from("rooms")
+					.insert([
+						{
+							id: crypto.randomUUID(), // 명시적으로 UUID 생성
+							question_id: quiz.id,
+							option: selected,
+							members: JSON.stringify([user.username]),
+						},
+					])
+					.select()
+					.single();
 
-        console.log("Room creation result:", { newRoom, createError });
+				console.log("Room creation result:", { newRoom, createError });
 
-        if (createError) {
-          console.error("Room creation failed:", createError);
-          throw new Error(`채팅방 생성 실패: ${createError.message}`);
-        }
+				if (createError) {
+					console.error("Room creation failed:", createError);
+					throw new Error(`채팅방 생성 실패: ${createError.message}`);
+				}
 
-        roomId = newRoom?.id;
-        console.log("New room ID:", roomId);
+				roomId = newRoom?.id;
+				console.log("New room ID:", roomId);
 
-        if (!roomId) {
-          throw new Error("채팅방 ID를 가져올 수 없습니다.");
-        }
-      } else {
-        // 있으면 멤버 추가
-        console.log("Adding member to existing room...");
-        let members = [];
+				if (!roomId) {
+					throw new Error("채팅방 ID를 가져올 수 없습니다.");
+				}
+			} else {
+				// 있으면 멤버 추가
+				console.log("Adding member to existing room...");
+				let members = [];
 
-        try {
-          // members 필드가 JSON 문자열인 경우 파싱
-          if (typeof roomData.members === "string") {
-            members = JSON.parse(roomData.members);
-          } else if (Array.isArray(roomData.members)) {
-            members = roomData.members;
-          } else {
-            members = [];
-          }
-        } catch (parseError) {
-          console.warn(
-            "Failed to parse members, using empty array:",
-            parseError
-          );
-          members = [];
-        }
+				try {
+					// members 필드가 JSON 문자열인 경우 파싱
+					if (typeof roomData.members === "string") {
+						members = JSON.parse(roomData.members);
+					} else if (Array.isArray(roomData.members)) {
+						members = roomData.members;
+					} else {
+						members = [];
+					}
+				} catch (parseError) {
+					console.warn(
+						"Failed to parse members, using empty array:",
+						parseError,
+					);
+					members = [];
+				}
 
-        if (!members.includes(user.username)) {
-          const { error: updateError } = await supabase
-            .from("rooms")
-            .update({ members: JSON.stringify([...members, user.username]) })
-            .eq("id", roomId);
+				if (!members.includes(user.username)) {
+					const { error: updateError } = await supabase
+						.from("rooms")
+						.update({ members: JSON.stringify([...members, user.username]) })
+						.eq("id", roomId);
 
-          console.log("Member update result:", { updateError });
+					console.log("Member update result:", { updateError });
 
-          if (updateError) {
-            console.warn(
-              "Failed to update members, but continuing:",
-              updateError
-            );
-          }
-        }
-      }
+					if (updateError) {
+						console.warn(
+							"Failed to update members, but continuing:",
+							updateError,
+						);
+					}
+				}
+			}
 
-      console.log("=== NAVIGATION ATTEMPT ===");
-      console.log("Navigating to chat with roomId:", roomId);
-      console.log("Navigate function available:", typeof navigate);
+			console.log("=== NAVIGATION ATTEMPT ===");
+			console.log("Navigating to chat with roomId:", roomId);
+			console.log("Navigate function available:", typeof navigate);
 
-      // localStorage에 선택지 저장
-      const quizResult = {
-        question: quiz.question1,
-        selectedOption: selected,
-        timestamp: Date.now(),
-        roomId: roomId,
-      };
-      localStorage.setItem("quizResult", JSON.stringify(quizResult));
+			// localStorage에 선택지 저장
+			const quizResult = {
+				question: quiz.question1,
+				selectedOption: selected,
+				timestamp: Date.now(),
+				roomId: roomId,
+			};
+			localStorage.setItem("quizResult", JSON.stringify(quizResult));
 
-      // 채팅방으로 이동
-      navigate("/chat", {
-        state: {
-          roomId,
-          fromQuiz: true,
-          question: quiz.question1,
-          selectedOption: selected,
-        },
-      });
+			// 채팅방으로 이동
+			navigate("/chat", {
+				state: {
+					roomId,
+					fromQuiz: true,
+					question: quiz.question1,
+					selectedOption: selected,
+				},
+			});
 
-      console.log("=== NAVIGATION CALLED ===");
-    } catch (err: any) {
-      console.error("Quiz submission error:", err);
-      setError(
-        `답 제출 또는 채팅방 생성 중 오류가 발생했습니다: ${
-          err.message || "알 수 없는 오류"
-        }`
-      );
-    } finally {
-      setLoading(false);
-      console.log("=== SUBMIT FINISHED ===");
-    }
-  };
+			console.log("=== NAVIGATION CALLED ===");
+		} catch (err: any) {
+			console.error("Quiz submission error:", err);
+			setError(
+				`답 제출 또는 채팅방 생성 중 오류가 발생했습니다: ${
+					err.message || "알 수 없는 오류"
+				}`,
+			);
+		} finally {
+			setLoading(false);
+			console.log("=== SUBMIT FINISHED ===");
+		}
+	};
 
-  if (loading) return <QuizScreenDiv>로딩 중...</QuizScreenDiv>;
-  if (error) return <QuizScreenDiv>{error}</QuizScreenDiv>;
-  if (!quiz) return <QuizScreenDiv>오늘의 퀴즈가 없습니다.</QuizScreenDiv>;
+	if (loading) return <QuizScreenDiv>로딩 중...</QuizScreenDiv>;
+	if (error) return <QuizScreenDiv>{error}</QuizScreenDiv>;
+	if (!quiz) return <QuizScreenDiv>오늘의 퀴즈가 없습니다.</QuizScreenDiv>;
 
-  return (
-    <QuizScreenDiv>
-      <Header>
-        <Title>오늘의 주제</Title>
-        <Subtitle>하나를 선택해 의견을 남겨보세요</Subtitle>
-      </Header>
-      <QuizCard>
-        <TopicTag>오늘의 주제</TopicTag>
-        <Topic>{quiz.question1}</Topic>
-        <Split>
-          <OptionA
-            aria-label={`선택 ${quiz.option1}`}
-            onClick={() => setSelected(quiz.option1)}
-            selected={selected === quiz.option1}
-          >
-            {quiz.option1}
-          </OptionA>
-          <OptionB
-            aria-label={`선택 ${quiz.option2}`}
-            onClick={() => setSelected(quiz.option2)}
-            selected={selected === quiz.option2}
-          >
-            {quiz.option2}
-          </OptionB>
-          <VSBadge>VS</VSBadge>
-        </Split>
-        <div style={{ marginTop: "2rem", textAlign: "center" }}>
-          <button
-            onClick={handleSubmit}
-            disabled={!selected || loading}
-            style={{
-              padding: "0.85rem 2rem",
-              background: "#A8C686",
-              color: "#fff",
-              border: "none",
-              borderRadius: "0.375rem",
-              fontWeight: 700,
-              fontSize: "1.1rem",
-              cursor: !selected ? "not-allowed" : "pointer",
-              opacity: !selected ? 0.6 : 1,
-            }}
-          >
-            답 제출하기
-          </button>
-        </div>
-      </QuizCard>
-    </QuizScreenDiv>
-  );
+	return (
+		<QuizScreenDiv>
+			<Header>
+				<Title>오늘의 주제</Title>
+				<Subtitle>하나를 선택해 의견을 남겨보세요</Subtitle>
+			</Header>
+			<QuizCard>
+				<TopicTag>오늘의 주제</TopicTag>
+				<Topic>{quiz.question1}</Topic>
+				<Split>
+					<OptionA
+						aria-label={`선택 ${quiz.option1}`}
+						onClick={() => setSelected(quiz.option1)}
+						selected={selected === quiz.option1}
+					>
+						{quiz.option1}
+					</OptionA>
+					<OptionB
+						aria-label={`선택 ${quiz.option2}`}
+						onClick={() => setSelected(quiz.option2)}
+						selected={selected === quiz.option2}
+					>
+						{quiz.option2}
+					</OptionB>
+					<VSBadge>VS</VSBadge>
+				</Split>
+				<div style={{ marginTop: "2rem", textAlign: "center" }}>
+					<button
+						onClick={handleSubmit}
+						disabled={!selected || loading}
+						style={{
+							padding: "0.85rem 2rem",
+							background: "#A8C686",
+							color: "#fff",
+							border: "none",
+							borderRadius: "0.375rem",
+							fontWeight: 700,
+							fontSize: "1.1rem",
+							cursor: !selected ? "not-allowed" : "pointer",
+							opacity: !selected ? 0.6 : 1,
+						}}
+					>
+						답 제출하기
+					</button>
+				</div>
+			</QuizCard>
+		</QuizScreenDiv>
+	);
 }
 
 export default QuizScreen;
